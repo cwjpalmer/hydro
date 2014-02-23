@@ -1,3 +1,12 @@
+#include <Arduino.h>
+
+void setup();
+void loop();
+float calibrateEmpty  (float sensorValue);
+float calibrateFull (float sensorValue);
+float linearFitSlope (float sensorValue, float calFullValue, float slope);
+float liqLevelCalc (float sensorValue, float calFullValue, float slope);
+#line 1 "src/sketch.ino"
 /*
 ----- OPENING COMMENT BLOCK -----
 
@@ -121,6 +130,7 @@ float linearFitSlope (float sensorValue, float calFullValue, float slope)
   slope = 100/(calEmptyValue - calFullValue);
   Serial.print("Slope found = ");
   Serial.println(slope);
+
 }
 
 // function to determine the liquid level from a sensor value; sensor value is input
