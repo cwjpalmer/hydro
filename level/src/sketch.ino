@@ -35,6 +35,7 @@ Instructions are sent to the arduino through the serial connection, as bytes.
 
 
 
+
 float sensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
 float refValue = 0;                       // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
 float calEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
