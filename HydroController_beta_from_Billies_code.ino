@@ -42,6 +42,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     -Cermet Potentiometer 110Kohm
     -Protoboard
     -9V DC powersupply
+  
     */
 
     #include <UTFT.h>                          //16bit TFT screen library
