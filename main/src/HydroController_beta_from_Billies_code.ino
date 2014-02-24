@@ -62,8 +62,8 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // Allister confirm
     int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // Allister confirm 
     int lightSensor = 68;                      //pin for Photoresistor              // [x]   1 analog input, 10kOhm resistor, 5V
-    int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Analog, 4 + 5 (see documentation in folder)
-    const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital
+    int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
+    const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
 
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
@@ -162,7 +162,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
 
-        void logicLoop() // loop that prints humidity lvl ("Luchtvochtigheid")
+        void logicLoop() // loop that prints humidity lvl ("Luchtvochtigheid") <- that is the angriest humidity I have ever seen 
         {
 
           ReadDHT();
