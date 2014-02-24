@@ -42,7 +42,6 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     -Cermet Potentiometer 110Kohm
     -Protoboard
     -9V DC powersupply
-  
     */
 
     #include <UTFT.h>                          //16bit TFT screen library
@@ -55,16 +54,16 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT
     ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch
 
-    #define dht_dpin 69                        //pin for DHT11
-    int pHPin = 59;                            //pin for pH probe
-    int pHPlusPin = 45;                        //pin for Base pump (relay)
-    int pHMinPin = 43;                         //pin for Acide pump (relay)
-    int ventilatorPin = 47;                    //pin for Fan (relay)
-    int floatLowPin = 7;                       //pin for lower float sensor
-    int floatHighPin = 8;                      //pin for upper float sensor
-    int solenoidPin = 60;                      //pin for Solenoid valve (relay)
-    int lightSensor = 68;                      //pin for Photoresistor
-    const int chipSelect = 53;                 //pin for chipselect SD card
+    #define dht_dpin 69                        //pin for DHT11                      // [x]   1 digital input, 10KOhm resistor, 5V
+    int pHPin = 59;                            //pin for pH probe                   // [ ? ] what kind of input does the relay take?
+    int pHPlusPin = 45;                        //pin for Base pump (relay)          // [ ? ] what kind of input does the relay take?
+    int pHMinPin = 43;                         //pin for Acide pump (relay)         // [ ? ] what kind of input does the relay take?
+    int ventilatorPin = 47;                    //pin for Fan (relay)                // [ ? ] what kind of input does the relay take?
+    int floatLowPin = 7;                       //pin for lower float sensor         // [ ? ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // verify with Allister & working code
+    int floatHighPin = 8;                      //pin for upper float sensor         // [ ? ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // verify with Allister & working code
+    int lightSensor = 68;                      //pin for Photoresistor              // [x]   1 analog input, 10kOhm resistor, 5V
+    int sdPin = 53;                            //pin for serial comms with SD card  // [ ? ] digital?
+    const int chipSelect = 53;                 //pin for chipselect SD card         // [ ? ] is the chipselect pin digital? 
 
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
@@ -106,19 +105,15 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     byte dht_dat[4];    //Array to hold the bytes sent from sensor.
 
 
-        void setup()                                                      // [x] add descriptions of functions here
-        {
+        void setup() {
           EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
           logicSetup();             // set some pinmodes and begin serial comms
           graphSetup();             // *GONE* LCD initalization
           timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
           SDSetup();                // setup SD card, report if card is missing
-         
         }
          
-         void loop()                                                     // [] add descriptions of functions here
-         {
-           
+         void loop() {
            graphLoop();             // *GONE* LCD display
            logicLoop();             // change control variables based on system state, serial print process variables
            fotoLoop();              // calculate and serial print light level
@@ -129,8 +124,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
          }
          
          // - DISABLE EEPROM WHEN NOT REQUIRED - specified life of 100k write/erase cycles
-         void EepromRead() // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
-        {
+         void EepromRead() { // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
           Setpoint = EEPROM.readFloat(EepromSetpoint);
           SetHysteris = EEPROM.readFloat(EepromSetHysteris);
           FanTemp = EEPROM.read(EepromFanTemp);
@@ -150,8 +144,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
         */
 
-        void logicSetup()
-        {
+        void logicSetup() {
          
         pinMode(pHPlusPin, OUTPUT);
         pinMode(pHMinPin, OUTPUT);
@@ -171,8 +164,10 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
 
         void logicLoop() // loop that prints humidity lvl ("Luchtvochtigheid")
         {
+
           ReadDHT();
-          switch (bGlobalErr){
+
+          switch (bGlobalErr) {
             case 0:
            Serial.print("Luchtvochtigheid = ");
            Serial.print(dht_dat[0], DEC);
@@ -204,41 +199,35 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
           HysterisPlus = (Setpoint + SetHysteris);
            
           // - SERIES OF IF STATEMENTS TO CHANGE CONTROL VARIABLES BASED ON SYSTEM STATE -
-          if (pH == Setpoint)
-          {
+          if (pH == Setpoint) {
             pmem == 0, // why is this a logical operator?
             digitalWrite (pHMinPin, LOW);
             digitalWrite (pHPlusPin, LOW);
           }
 
-          if (pH >= HysterisMin && pH <= HysterisPlus && pmem == 0)
-          {
+          if (pH >= HysterisMin && pH <= HysterisPlus && pmem == 0) {
             digitalWrite (pHMinPin, LOW);
             digitalWrite (pHPlusPin, LOW);
           }
          
-          if (pH < HysterisMin && pmem == 0)
-          {
+          if (pH < HysterisMin && pmem == 0) {
             pmem == 1,
             digitalWrite (pHPlusPin, HIGH);
             digitalWrite (pHMinPin, LOW);
           }
          
-          if (pH >= HysterisMin && pH < Setpoint && pmem == 1)
-          {
+          if (pH >= HysterisMin && pH < Setpoint && pmem == 1) {
             digitalWrite (pHPlusPin, HIGH);
             digitalWrite (pHMinPin, LOW);
           }
          
-          if (pH > HysterisPlus && pmem == 0)
-          {
+          if (pH > HysterisPlus && pmem == 0) {
             pmem ==2,
             digitalWrite (pHMinPin, HIGH);
             digitalWrite (pHPlusPin, LOW);
           }
          
-          if (pH <= HysterisPlus && pH > Setpoint && pmem == 2)
-          {
+          if (pH <= HysterisPlus && pH > Setpoint && pmem == 2) {
             digitalWrite (pHMinPin, HIGH);
             digi
 
@@ -695,15 +684,13 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
           }
          */
          
-         void InitDHT() // setup DHT sensor
-         {
+        void InitDHT() { // setup DHT sensor
             pinMode(dht_dpin,OUTPUT);
             digitalWrite(dht_dpin,HIGH);
         }
 
-        void ReadDHT() // 
-        {
-          bGlobalErr=0; // what does this mean?
+        void ReadDHT() {
+          bGlobalErr=0;
           byte dht_in;
           byte i;
           digitalWrite(dht_dpin,LOW);
@@ -713,8 +700,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
           pinMode(dht_dpin,INPUT);
           dht_in=digitalRead(dht_dpin); // intresting trick - send a pulse of power to the pin and then read it (last 5 lines)
 
-          if(dht_in)
-          {
+          if(dht_in) {
              bGlobalErr=1; //dht start condition 1 not met
              return;
           }
@@ -722,8 +708,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
           delayMicroseconds(80);
           dht_in=digitalRead(dht_dpin);
 
-          if(!dht_in)
-          {
+          if(!dht_in) {
              bGlobalErr=2;//dht start condition 2 not met
              return;
           }
@@ -744,8 +729,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         };
 
 
-        byte read_dht_dat() // what does this do?
-        {
+        byte read_dht_dat() { // what does this do?
           byte i = 0;
           byte result=0;
           for(i=0; i< 8; i++)
@@ -762,10 +746,8 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
 
-        void fotoLoop()
-        {
-          if (page == 0)
-          {
+        void fotoLoop() {
+          if (page == 0) {
           lightADCReading = analogRead(lightSensor);
           // Calculating the voltage of the Analog to Digital Converter ADC for light
           lightInputVoltage = 5.0 * ((double)lightADCReading / 1024.0);
@@ -780,79 +762,60 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
 
-        void phIncreaseSetpoint()                                  // [x] add a function to run this from serial input
-        {
-        Setpoint = Setpoint + 0.01;
-          if (Setpoint >= 9.00)
-          {
+        void phIncreaseSetpoint() {
+          Setpoint = Setpoint + 0.01;
+          if (Setpoint >= 9.00) {
             Setpoint = 9.00;
           }
-          if (page == 2)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 2) {                                           // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(Setpoint, 2, 76, 79);
           }
         }
 
-
-        void phDecreaseSetpoint()                                  // [x] add a function to run this from serial input
-        {
-        Setpoint = Setpoint - 0.01;
-          if (Setpoint <= 3.00)
-          {
+        void phDecreaseSetpoint() {
+          Setpoint = Setpoint - 0.01;
+          if (Setpoint <= 3.00) {
             Setpoint = 3.00;
           }
-          if (page == 2)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 2) {                                          // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(Setpoint, 2, 76, 79);
           }
         }
 
-
-        void phIncreaseHysteris()                                  // [x] add a function to run this from serial input
-        {
-        SetHysteris = SetHysteris + 0.01;
-          if (SetHysteris >= 9.00)
-          {
+        void phIncreaseHysteris() {
+          SetHysteris = SetHysteris + 0.01;
+          if (SetHysteris >= 9.00) {
             SetHysteris = 9.00;
           }
-          if (page == 2)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 2) {                                           // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(SetHysteris, 2, 76, 162);
           }
         }
 
-
-        void phDecreaseHysteris()                                  // [x] add a function to run this from serial input
-        {
-        SetHysteris = SetHysteris - 0.01;
-          if (SetHysteris <= 0.01)
-          {
+        void phDecreaseHysteris() {
+          SetHysteris = SetHysteris - 0.01;
+          if (SetHysteris <= 0.01) {
             SetHysteris = 0.01;
           }
-          if (page == 2)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 2) {                                         // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(SetHysteris, 2, 76, 162);
           }
         }
 
-
-        void FanIncreaseTemp()                                  // [x] add a function to run this from serial input
-        {
-        FanTemp = FanTemp + 1;
-          if (FanTemp >= 50)
-          {
+        void FanIncreaseTemp() {
+          FanTemp = FanTemp + 1;
+          if (FanTemp >= 50) {
             FanTemp = 50;
           }
-          if (page == 1)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 1) {                                         // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanTemp, 76, 79);
@@ -860,15 +823,12 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
 
-        void FanDecreaseTemp()                                  // [x] add a function to run this from serial input
-        {
-        FanTemp = FanTemp - 1;
-          if (FanTemp <= 0)
-          {
+        void FanDecreaseTemp() {
+          FanTemp = FanTemp - 1;
+          if (FanTemp <= 0) {
             FanTemp = 0;
           }
-          if (page == 1)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 1) {                                          // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanTemp, 76, 79);
@@ -876,15 +836,12 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
 
-        void FanIncreaseHumid()                                  // [x] add a function to run this from serial input
-        {
-        FanHumid = FanHumid + 1;
-          if (FanHumid >= 100)
-          {
+        void FanIncreaseHumid() {
+          FanHumid = FanHumid + 1;
+          if (FanHumid >= 100) {
             FanHumid = 100;
           }
-          if (page == 1)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 1) {                                           // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanHumid, 76, 162);
@@ -892,15 +849,12 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
 
-        void FanDecreaseHumid()                                  // [x] add a function to run this from serial input
-        {
-        FanHumid = FanHumid - 1;
-          if (FanHumid <= 0)
-          {
+        void FanDecreaseHumid() {
+          FanHumid = FanHumid - 1;
+          if (FanHumid <= 0) {
             FanHumid = 0;
           }
-          if (page == 1)                                           // this is LCD input stuff - gut it
-          {
+          if (page == 1) {                                          // this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanHumid, 76, 162);
@@ -918,55 +872,46 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         }
 
                                                                        // [] rewrite to use level sensor, instead of float switch as input
-        void TankProgControl()                                         // this controls a solenoid to refill the tank as necessry based on the float switch
-          {
+        void TankProgControl() {                                        // this controls a solenoid to refill the tank as necessry based on the float switch
           int levelHigh = LOW;
           int levelLow = LOW;
          
           levelHigh = digitalRead(floatHighPin);
           levelLow = digitalRead(floatLowPin);
          
-          if (levelHigh == LOW)
-          {
-            if (page == 0)
-            {
+          if (levelHigh == LOW) {
+            if (page == 0) {
               myGLCD.setColor(0, 0, 255);
               myGLCD.print("HalfFull", 91, 207);
             }
-            if (levelLow == LOW)
-            {
-              if (page == 0)
-              {
-              myGLCD.setColor(0, 0, 255);
-              myGLCD.print("Filling ", 91, 207);
+            if (levelLow == LOW) {
+              if (page == 0) {
+                myGLCD.setColor(0, 0, 255);
+                myGLCD.print("Filling ", 91, 207);
               }
               digitalWrite(solenoidPin, HIGH); //solenoid valve open.
             }
           }
           else
           {
-            if (page == 0)
-            {
+            if (page == 0) {
               myGLCD.setColor(0, 0, 255);
               myGLCD.print("Full    ", 91, 207);
             }
-            if (levelLow == HIGH)
-            {
+            if (levelLow == HIGH) {
               digitalWrite(solenoidPin, LOW); //solenoid valve closed.
-              if (page == 3)
-              {
-              myGLCD.setColor(0, 0, 255);
-              myGLCD.print("OFF", 260, 171);
+              if (page == 3) {
+                myGLCD.setColor(0, 0, 255);
+                myGLCD.print("OFF", 260, 171);
               }
             }
           }
-          }
-                                                                      // [x] add function to run this function from serial command
+        }
+
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
         {
           digitalWrite(solenoidPin, HIGH);
-          if (page == 3)                                              // LCD screen stuff - []remove
-          {
+          if (page == 3) {                                             // LCD screen stuff - []remove
             myGLCD.setColor(255, 255, 0);
             myGLCD.print("ON ", 260, 171);
           }
@@ -975,10 +920,9 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         void SDSetup()                                                // set up SD card
         {
           Serial.print("Initializing SD card...");
-          pinMode(53, OUTPUT);
-         
-          if (!SD.begin(chipSelect))
-          {
+          pinMode(sdPin, OUTPUT);
+
+          if (!SD.begin(chipSelect)) {                                // chipselect is the 
             Serial.println("Card Failed, or not present");
             return;
           }
@@ -991,8 +935,7 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
         {
           File dataFile = SD.open("datalog.csv", FILE_WRITE);
          
-          if (dataFile)
-          {
+          if (dataFile) {
             now = RTC.now();
             dataFile.print(pH);
             dataFile.print(", ");
@@ -1016,16 +959,15 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
             dataFile.println();
             dataFile.close();
           }
-          else
-          {
+          else {
             Serial.println("error opening datalog.csv");
           }
         }
 
         void timeSetup()                                            // start time
         {
-            Wire.begin();
-            RTC.begin();
+          Wire.begin();
+          RTC.begin();
         }
 
         void followSerialCommand() {
