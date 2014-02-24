@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/uno/src/HydroController_beta_from_Billies_code.cpp : src/HydroController_beta_from_Billies_code.ino
+	@mkdir -p .build/uno/src
+	@echo [93msrc/HydroController_beta_from_Billies_code.ino[0m
+	@/usr/local/bin/ino preproc  -o $@ $^
+
+
+all : .build/uno/src/HydroController_beta_from_Billies_code.cpp
+	@true
+
