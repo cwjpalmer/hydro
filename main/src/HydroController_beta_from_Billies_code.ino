@@ -65,7 +65,6 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
 
-
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
     extern uint8_t SevenSegNumFont[];
