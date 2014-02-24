@@ -1,5 +1,5 @@
-xx#include <EEPROMex.h> //WTF is there 'xx' here?
-#include <EEPROMVar.h>
+//#include <EEPROMex.h> //WTF is there 'xx' here?
+//#include <EEPROMVar.h>
 
   /* 
   THIS VERSION IS MODIFIED FROM THE ORIGINAL VERSION
