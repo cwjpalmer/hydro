@@ -55,15 +55,15 @@ xx#include <EEPROMex.h> //WTF is there 'xx' here?
     ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch
 
     #define dht_dpin 69                        //pin for DHT11                      // [x]   1 digital input, 10KOhm resistor, 5V
-    int pHPin = 59;                            //pin for pH probe                   // [ ? ] what kind of input does the relay take?
-    int pHPlusPin = 45;                        //pin for Base pump (relay)          // [ ? ] what kind of input does the relay take?
-    int pHMinPin = 43;                         //pin for Acide pump (relay)         // [ ? ] what kind of input does the relay take?
-    int ventilatorPin = 47;                    //pin for Fan (relay)                // [ ? ] what kind of input does the relay take?
-    int floatLowPin = 7;                       //pin for lower float sensor         // [ ? ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // verify with Allister & working code
-    int floatHighPin = 8;                      //pin for upper float sensor         // [ ? ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // verify with Allister & working code
+    int pHPin = 59;                            //pin for pH probe                   // [  ] analog Pin
+    int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
+    int pHMinPin = 43;                         //pin for Acide pump (relay)         // [  ] digital Pin
+    int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
+    int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // Allister confirm
+    int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // Allister confirm 
     int lightSensor = 68;                      //pin for Photoresistor              // [x]   1 analog input, 10kOhm resistor, 5V
-    int sdPin = 53;                            //pin for serial comms with SD card  // [ ? ] digital?
-    const int chipSelect = 53;                 //pin for chipselect SD card         // [ ? ] is the chipselect pin digital? 
+    int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Analog, 4 + 5 (see documentation in folder)
+    const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital
 
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
