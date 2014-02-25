@@ -50,6 +50,8 @@
     #include <Wire.h>                          //One Wire library
     #include "RTClib.h"                        //Real Time Clock library
     #include <EEPROMex.h>                      //Extended Eeprom library
+    #include <OneWire.h>                       //OneWise library, for liquid temperature sensor
+
 
     UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT
     ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch
@@ -59,12 +61,13 @@
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 43;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // Allister confirm
-    int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V      // Allister confirm 
+    int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
+    int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
     int lightSensor = 68;                      //pin for Photoresistor              // [x]   1 analog input, 10kOhm resistor, 5V
     int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
-    int solenoidPin = 22;    // [ ] FIX IT!!! made this number up
+    int solenoidPin = 22;    // [ ] FIX IT!!! made this number up     // digital pin
+    int liquidTemperaturePin = 23 // [ ] FIX IT!!! made this number up     // digital pin
 
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
@@ -88,6 +91,7 @@
     float SetHysteris;
     float FanTemp;
     float FanHumid;
+    float liquidTemperature;           // variable to hold temperature of liquid from waterproof thermometer
 
     int lightADCReading;
     double currentLightInLux;
@@ -151,6 +155,8 @@
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
+        pinMode()
+        OneWire ds(liquidTemperaturePin);
          
         pmem==0;
          
@@ -910,6 +916,64 @@
           }
         }
 
+        void liquidTemperatureReate(){
+          int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
+          byte i;
+          byte present = 0;
+          byte data[12];
+          byte addr[8];
+
+          if ( !ds.search(addr)) {
+              ds.reset_search();
+              return;
+          }
+
+          ds.reset();
+          ds.select(addr);
+          ds.write(0x44,1);         // start conversion, with parasite power on at the end
+
+          delay(1000);     // maybe 750ms is enough, maybe not
+          // we might do a ds.depower() here, but the reset will take care of it.
+
+          present = ds.reset();
+          ds.select(addr);    
+          ds.write(0xBE);         // Read Scratchpad
+
+         
+          Serial.print(" Liquid T = ");
+          for ( i = 0; i < 9; i++) {           // we need 9 bytes
+            data[i] = ds.read();
+          }
+          
+          LowByte = data[0];
+          HighByte = data[1];
+          TReading = (HighByte << 8) + LowByte;
+          SignBit = TReading & 0x8000;  // test most sig bit
+          if (SignBit) // negative
+          {
+            TReading = (TReading ^ 0xffff) + 1; // 2's comp
+          }
+          Tc_100 = (6 * TReading) + TReading / 4;    // multiply by (100 * 0.0625) or 6.25
+
+          Whole = Tc_100 / 100;  // separate off the whole and fractional portions
+          Fract = Tc_100 % 100;
+
+
+          if (SignBit) // If its negative
+          {
+             Serial.print("-");
+          }
+          Serial.print(Whole);
+          Serial.print(".");
+          if (Fract < 10)
+          {
+             Serial.print("0");
+          }
+          Serial.print(Fract);
+
+          Serial.print("\n");
+        }
+
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
         {
           digitalWrite(solenoidPin, HIGH);
@@ -1008,7 +1072,3 @@
               }
           }
         }
-
-
-
-
