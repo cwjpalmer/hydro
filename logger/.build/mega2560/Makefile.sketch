@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/mega2560/src/SD_Data_Logger_Test.cpp : src/SD_Data_Logger_Test.ino
+	@mkdir -p .build/mega2560/src
+	@echo [93msrc/SD_Data_Logger_Test.ino[0m
+	@/usr/local/bin/ino preproc  -o $@ $^
+
+
+all : .build/mega2560/src/SD_Data_Logger_Test.cpp
+	@true
+
