@@ -44,8 +44,8 @@
     -9V DC powersupply
     */
 
-    #include <UTFT.h>                          //16bit TFT screen library
-    #include <ITDB02_Touch.h>                  //Touchscreen library
+  //#include <UTFT.h>                          //16bit TFT screen library            // commented out because not using touch screen
+  //#include <ITDB02_Touch.h>                  //Touchscreen library                 // commented out because not using touch screen
     #include <SD.h>                            //SD card library
     #include <Wire.h>                          //One Wire library
     #include "RTClib.h"                        //Real Time Clock library
@@ -53,21 +53,21 @@
     #include <OneWire.h>                       //OneWise library, for liquid temperature sensor
 
 
-    UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT
-    ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch
+  //UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT                  // commented out because not using touch screen
+  //ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch                // commented out because not using touch screen
 
-    #define dht_dpin 69                        //pin for DHT11                      // [x]   1 digital input, 10KOhm resistor, 5V
+    #define dht_dpin 69                        //pin for DHT11                      // [  ] 1 digital input, 10KOhm resistor, 5V
     int pHPin = 59;                            //pin for pH probe                   // [  ] analog Pin
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 43;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
     int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
     int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
-    int lightSensor = 68;                      //pin for Photoresistor              // [x]   1 analog input, 10kOhm resistor, 5V
+    int lightSensor = 68;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
     int solenoidPin = 22;    // [ ] FIX IT!!! made this number up     // digital pin
-    int liquidTemperaturePin = 23 // [ ] FIX IT!!! made this number up     // digital pin
+    int liquidTemperaturePin = 23; // [ ] FIX IT!!! made this number up     // digital pin
 
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
@@ -156,7 +156,6 @@
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
-        pinMode()
         OneWire ds(liquidTemperaturePin);
          
         pmem==0;
@@ -776,11 +775,13 @@
           if (Setpoint >= 9.00) {
             Setpoint = 9.00;
           }
-          if (page == 2) {                                           // this is LCD input stuff - gut it
+          /*
+          if (page == 2) {                                           this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(Setpoint, 2, 76, 79);
           }
+          */
         }
 
         void phDecreaseSetpoint() {
@@ -788,11 +789,13 @@
           if (Setpoint <= 3.00) {
             Setpoint = 3.00;
           }
-          if (page == 2) {                                          // this is LCD input stuff - gut it
+          /*
+          if (page == 2) {                                          this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(Setpoint, 2, 76, 79);
           }
+          */
         }
 
         void phIncreaseHysteris() {
@@ -800,11 +803,13 @@
           if (SetHysteris >= 9.00) {
             SetHysteris = 9.00;
           }
-          if (page == 2) {                                           // this is LCD input stuff - gut it
+          /*
+          if (page == 2) {                                           this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(SetHysteris, 2, 76, 162);
           }
+          */
         }
 
         void phDecreaseHysteris() {
@@ -812,11 +817,13 @@
           if (SetHysteris <= 0.01) {
             SetHysteris = 0.01;
           }
-          if (page == 2) {                                         // this is LCD input stuff - gut it
+          /*
+          if (page == 2) {                                         this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumF(SetHysteris, 2, 76, 162);
           }
+          */
         }
 
         void FanIncreaseTemp() {
@@ -824,10 +831,12 @@
           if (FanTemp >= 50) {
             FanTemp = 50;
           }
-          if (page == 1) {                                         // this is LCD input stuff - gut it
+          /*
+          if (page == 1) {                                         this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanTemp, 76, 79);
+          */
           }
         }
 
@@ -837,10 +846,12 @@
           if (FanTemp <= 0) {
             FanTemp = 0;
           }
-          if (page == 1) {                                          // this is LCD input stuff - gut it
+          /*
+          if (page == 1) {                                          this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanTemp, 76, 79);
+          */
           }
         }
 
@@ -850,10 +861,12 @@
           if (FanHumid >= 100) {
             FanHumid = 100;
           }
-          if (page == 1) {                                           // this is LCD input stuff - gut it
+          /*
+          if (page == 1) {                                           this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanHumid, 76, 162);
+          */
           }
         }
 
@@ -863,10 +876,12 @@
           if (FanHumid <= 0) {
             FanHumid = 0;
           }
-          if (page == 1) {                                          // this is LCD input stuff - gut it
+          /*
+          if (page == 1) {                                          this is LCD input stuff - gut it
             myGLCD.setColor(0, 0, 255);
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanHumid, 76, 162);
+          */
           }
         }
 
@@ -889,30 +904,37 @@
           levelLow = digitalRead(floatLowPin);
          
           if (levelHigh == LOW) {
+
             if (page == 0) {
               myGLCD.setColor(0, 0, 255);
               myGLCD.print("HalfFull", 91, 207);
             }
             if (levelLow == LOW) {
+              /*
               if (page == 0) {
                 myGLCD.setColor(0, 0, 255);
                 myGLCD.print("Filling ", 91, 207);
               }
+              */
               digitalWrite(solenoidPin, HIGH); //solenoid valve open.
             }
           }
           else
           {
+            /*
             if (page == 0) {
               myGLCD.setColor(0, 0, 255);
               myGLCD.print("Full    ", 91, 207);
             }
+            */
             if (levelLow == HIGH) {
               digitalWrite(solenoidPin, LOW); //solenoid valve closed.
+              /*
               if (page == 3) {
                 myGLCD.setColor(0, 0, 255);
                 myGLCD.print("OFF", 260, 171);
               }
+              */
             }
           }
         }
@@ -926,7 +948,7 @@
 
           if ( !ds.search(addr)) {
               ds.reset_search();
-              return;
+              // return;            // COMMENTED OUT BECAUSE NOT RETURNING ANYTHING, AND WOULDN'T COMPILE WITH THIS LINE INCLUDED
           }
 
           ds.reset();
@@ -979,10 +1001,12 @@
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
         {
           digitalWrite(solenoidPin, HIGH);
+          /*
           if (page == 3) {                                             // LCD screen stuff - []remove
             myGLCD.setColor(255, 255, 0);
             myGLCD.print("ON ", 260, 171);
           }
+          */
         }
 
         void SDSetup()                                                // set up SD card
