@@ -122,9 +122,10 @@
          //graphLoop();             // *GONE* LCD display
            logicLoop();             // change control variables based on system state, serial print process variables
            fotoLoop();              // calculate and serial print light level
+           liquidTemperatureRead(); // read liquid temperature, serial print
            FanControl();            // control fan from T and Humid
            TankProgControl();       // [] MUST REWRITE fill tank if below float level
-           SDLoop();                // log {pH, T, Humid, light, date, time} to SD card
+           SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
          }
          
@@ -734,7 +735,7 @@
 
           if(dht_dat[4]!= dht_check_sum)
            {bGlobalErr=3;}
-        };
+        } // removed semicolon because I don't think it belonged
 
 
         byte read_dht_dat() { // what does this do?
@@ -916,7 +917,7 @@
           }
         }
 
-        void liquidTemperatureReate(){
+        int liquidTemperatureRead(){ // changed this function from void to int to allow us to return T reading
           int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
           byte i;
           byte present = 0;
@@ -970,8 +971,9 @@
              Serial.print("0");
           }
           Serial.print(Fract);
-
           Serial.print("\n");
+
+          return Tc_100;
         }
 
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
@@ -1010,6 +1012,8 @@
             dataFile.print(dht_dat[0], DEC);
             dataFile.print(", ");
             dataFile.print(currentLightInLux);
+            dataFile.print(", ");
+            dataFile.print(liquidTemperatureRead()); // [] FIND A WAY TO REMOVE THE REDUNDANCY: putting this function here means that we read liq T twice each loop: once from calling liqtread in void loop, and once from SDloop.
             dataFile.print(", ");
             dataFile.print(now.day(), DEC);   
             dataFile.print('/');
