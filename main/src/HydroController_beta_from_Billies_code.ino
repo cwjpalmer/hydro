@@ -50,7 +50,8 @@
     #include <Wire.h>                          //One Wire library
     #include "RTClib.h"                        //Real Time Clock library
     #include <EEPROMex.h>                      //Extended Eeprom library
-    #include <OneWire.h>                       //OneWise library, for liquid temperature sensor
+    #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
+  //#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor ... get it via $git clone https://github.com/milesburton/Arduino-Temperature-Control-Library.git
 
 
   //UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT                  // commented out because not using touch screen
@@ -67,11 +68,13 @@
     int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
     int solenoidPin = 22;    // [ ] FIX IT!!! made this number up     // digital pin
-    int liquidTemperaturePin = 23; // [ ] FIX IT!!! made this number up     // digital pin
+  //int liquidTemperaturePin = 23; // [ ] FIX IT!!! made this number up     // digital pin   LIQTfindMeTag
 
+    /*      removed because used for LCD display
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
     extern uint8_t SevenSegNumFont[];
+    */
 
     RTC_DS1307 RTC;                            //Define RTC module
 
@@ -91,7 +94,7 @@
     float SetHysteris;
     float FanTemp;
     float FanHumid;
-    float liquidTemperature;           // variable to hold temperature of liquid from waterproof thermometer
+  //float liquidTemperature;           // variable to hold temperature of liquid from waterproof thermometer LIQTfindMeTag
 
     int lightADCReading;
     double currentLightInLux;
@@ -110,24 +113,11 @@
     byte dht_dat[4];    //Array to hold the bytes sent from sensor.
 
 
-        void setup() {
-          EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
-          logicSetup();             // set some pinmodes and begin serial comms
-        //graphSetup();             // *GONE* LCD initalization
-          timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-          SDSetup();                // setup SD card, report if card is missing
-        }
-         
-         void loop() {
-         //graphLoop();             // *GONE* LCD display
-           logicLoop();             // change control variables based on system state, serial print process variables
-           fotoLoop();              // calculate and serial print light level
-           liquidTemperatureRead(); // read liquid temperature, serial print
-           FanControl();            // control fan from T and Humid
-           TankProgControl();       // [] MUST REWRITE fill tank if below float level
-           SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
-           followSerialCommand();   // respond to serial input 
-         }
+    /*
+                VOID SETUP AND VOID LOOP MOVED TO END OF DOCUMENT
+                functions must be defined before they are called,
+                so they had to be at the end
+    */
          
          // - DISABLE EEPROM WHEN NOT REQUIRED - specified life of 100k write/erase cycles
          void EepromRead() { // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
@@ -156,7 +146,7 @@
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
-        OneWire ds(liquidTemperaturePin);
+      //OneWire ds(liquidTemperaturePin); //LIQTfindMeTag
          
         pmem==0;
          
@@ -169,9 +159,8 @@
         }
 
 
-        void logicLoop() // loop that prints humidity lvl ("Luchtvochtigheid") <- that is the angriest humidity I have ever seen 
-        {
-
+        void logicLoop() { // loop that prints humidity lvl ("Luchtvochtigheid") <- that is the angriest humidity I have ever seen 
+ 
           ReadDHT();
 
           switch (bGlobalErr) {
@@ -248,7 +237,7 @@
           Serial.print("pH = ");
           Serial.println(pH);
 
-        /* COMMENTED OUT BECAUSE I THINK ITS ONLY RELATED TO THE TOUCH SCREEN
+        /*
         if (page == 0)
         {
           myGLCD.printNumF(pH, 2, 91, 23);
@@ -837,7 +826,6 @@
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanTemp, 76, 79);
           */
-          }
         }
 
 
@@ -852,7 +840,6 @@
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanTemp, 76, 79);
           */
-          }
         }
 
 
@@ -867,7 +854,6 @@
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanHumid, 76, 162);
           */
-          }
         }
 
 
@@ -882,7 +868,6 @@
             myGLCD.setBackColor(255, 255, 255);
             myGLCD.printNumI(FanHumid, 76, 162);
           */
-          }
         }
 
 
@@ -904,11 +889,12 @@
           levelLow = digitalRead(floatLowPin);
          
           if (levelHigh == LOW) {
-
+            /*
             if (page == 0) {
               myGLCD.setColor(0, 0, 255);
               myGLCD.print("HalfFull", 91, 207);
             }
+            */
             if (levelLow == LOW) {
               /*
               if (page == 0) {
@@ -939,14 +925,16 @@
           }
         }
 
-        int liquidTemperatureRead(){ // changed this function from void to int to allow us to return T reading
+        /*
+        int liquidTemperatureRead(){ // changed this function from void to int to allow us to return T reading LIQTfindMeTag
+
           int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
           byte i;
           byte present = 0;
           byte data[12];
           byte addr[8];
 
-          if ( !ds.search(addr)) {
+          if ( !ds.search(addr)) { 
               ds.reset_search();
               // return;            // COMMENTED OUT BECAUSE NOT RETURNING ANYTHING, AND WOULDN'T COMPILE WITH THIS LINE INCLUDED
           }
@@ -997,7 +985,8 @@
 
           return Tc_100;
         }
-
+        */
+        
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
         {
           digitalWrite(solenoidPin, HIGH);
@@ -1036,8 +1025,8 @@
             dataFile.print(dht_dat[0], DEC);
             dataFile.print(", ");
             dataFile.print(currentLightInLux);
-            dataFile.print(", ");
-            dataFile.print(liquidTemperatureRead()); // [] FIND A WAY TO REMOVE THE REDUNDANCY: putting this function here means that we read liq T twice each loop: once from calling liqtread in void loop, and once from SDloop.
+          //dataFile.print(", ");                       //LIQTfindMeTag
+          //dataFile.print(liquidTemperatureRead()); // [] FIND A WAY TO REMOVE THE REDUNDANCY: putting this function here means that we read liq T twice each loop: once from calling liqtread in void loop, and once from SDloop. LIQTfindMeTag
             dataFile.print(", ");
             dataFile.print(now.day(), DEC);   
             dataFile.print('/');
@@ -1100,3 +1089,22 @@
               }
           }
         }
+
+        void setup() {
+          EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
+          logicSetup();             // set some pinmodes and begin serial comms
+        //graphSetup();             // *GONE* LCD initalization
+          timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
+          SDSetup();                // setup SD card, report if card is missing
+        }
+         
+         void loop() {
+         //graphLoop();             // *GONE* LCD display
+           logicLoop();             // change control variables based on system state, serial print process variables
+           fotoLoop();              // calculate and serial print light level
+         //liquidTemperatureRead(); // read liquid temperature, serial print  LIQTfindMeTag
+           FanControl();            // control fan from T and Humid
+           TankProgControl();       // [] MUST REWRITE fill tank if below float level
+           SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
+           followSerialCommand();   // respond to serial input 
+         }
