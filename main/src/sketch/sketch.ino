@@ -44,8 +44,8 @@
     -9V DC powersupply
     */
 
-    #include <UTFT.h>                          //16bit TFT screen library
-    #include <ITDB02_Touch.h>                  //Touchscreen library
+  //#include <UTFT.h>                          //16bit TFT screen library            // commented out because not using touch screen
+  //#include <ITDB02_Touch.h>                  //Touchscreen library                 // commented out because not using touch screen
     #include <SD.h>                            //SD card library
     #include <Wire.h>                          //One Wire library
     #include "RTClib.h"                        //Real Time Clock library
@@ -53,21 +53,21 @@
     #include <OneWire.h>                       //OneWise library, for liquid temperature sensor
 
 
-    UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT
-    ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch
+  //UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT                  // commented out because not using touch screen
+  //ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch                // commented out because not using touch screen
 
-    #define dht_dpin 69                        //pin for DHT11                      // [x]   1 digital input, 10KOhm resistor, 5V
+    #define dht_dpin 69                        //pin for DHT11                      // [  ] 1 digital input, 10KOhm resistor, 5V
     int pHPin = 59;                            //pin for pH probe                   // [  ] analog Pin
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 43;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
     int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
     int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
-    int lightSensor = 68;                      //pin for Photoresistor              // [x]   1 analog input, 10kOhm resistor, 5V
+    int lightSensor = 68;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
     int solenoidPin = 22;    // [ ] FIX IT!!! made this number up     // digital pin
-    int liquidTemperaturePin = 23 // [ ] FIX IT!!! made this number up     // digital pin
+    int liquidTemperaturePin = 23; // [ ] FIX IT!!! made this number up     // digital pin
 
     extern uint8_t BigFont[];                  //Which fonts to use...
     extern uint8_t SmallFont[];
@@ -156,7 +156,7 @@
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
-        pinMode()
+     // pinMode();                          // commented out, becasue empty
         OneWire ds(liquidTemperaturePin);
          
         pmem==0;
@@ -926,7 +926,7 @@
 
           if ( !ds.search(addr)) {
               ds.reset_search();
-              return;
+              // return;            // COMMENTED OUT BECAUSE NOT RETURNING ANYTHING, AND WOULDN'T COMPILE WITH THIS LINE INCLUDED
           }
 
           ds.reset();
