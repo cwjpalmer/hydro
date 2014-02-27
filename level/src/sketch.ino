@@ -27,9 +27,9 @@ Application:
 ----- OPERATOR INSTRUCTIONS -----
 Instructions are sent to the arduino through the serial connection, as bytes.
 
-1 -> empty calibration
-2 -> full calibration
-3 -> calculate slope
+10 -> empty calibration
+11 -> full calibration
+12 -> calculate slope
 
 */
 
@@ -37,16 +37,16 @@ Instructions are sent to the arduino through the serial connection, as bytes.
 
 
 
-float sensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
-float refValue = 0;                       // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
-float calEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
-float calFullValue = 0;                     // variable to store the raw value yielded by full calibration 
-float slope = 0;                            // variable to store the calculated value of the slope, for liq level calc
+float liqLevelsensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
+float liqLevelrefValue = 0;                         // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
+float liqLevelcalEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
+float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
+float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
 float liqLevelReading = 0;                  // variable to store liquid level reading, as a percentage
 float liqLevel =0;
-int incomingByte = 0;                       // variable to store an incoming byte from serial communications  
-int sensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
-int refPin = A5;                            // signal pin for reference resistor
+int liqLevelincomingByte = 0;                       // variable to store an incoming byte from serial communications  
+int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
+int liqLevelrefPin = A5;                            // signal pin for reference resistor
 int ledPin = 13;                            // select the pin for the LED
 
 
@@ -61,15 +61,16 @@ void loop()
 {
 
 
-  sensorValue = analogRead(sensorPin);      // read the value from the sensor
-  refValue = analogRead(refPin);            // read the value from the reference resistor
+  liqLevelsensorValue = analogRead(liqLevelsensorPin);      // read the value from the sensor
+  liqLevelrefValue = analogRead(liqLevelrefPin);            // read the value from the reference resistor
  
   //  this block of code lights the LED, with duration & delay proportional sensor reading for visual feedback
+  // omit for use in control system
   digitalWrite(ledPin, HIGH);               // turn the ledPin on
-  Serial.println(sensorValue);              // stop the program for <sensorValue> milliseconds:
-  delay(sensorValue);                       // wait for an amount of time proportional to the sensor
+  Serial.println(liqLevelsensorValue);              // stop the program for <sensorValue> milliseconds:
+  delay(liqLevelsensorValue);                       // wait for an amount of time proportional to the sensor
   digitalWrite(ledPin, LOW);                // turn the ledPin off:       
-  delay(sensorValue);                       // stop the program for for <sensorValue> milliseconds:
+  delay(liqLevelsensorValue);                       // stop the program for for <sensorValue> milliseconds:
 
 
   if (Serial.available() > 0) 
@@ -77,13 +78,13 @@ void loop()
     incomingByte = Serial.read(); 
      switch (incomingByte) 
      {
-    case '1':    
+    case '10':    
       calibrateEmpty(sensorValue);
       break;
-    case '2':    
+    case '11':    
       calibrateFull(sensorValue);
       break;
-    case '3':    
+    case '12':    
       linearFitSlope(sensorValue, calFullValue, slope);
       break;
     default:
