@@ -42,12 +42,12 @@ float liqLevelrefValue = 0;                         // variable to store the val
 float liqLevelcalEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
 float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
 float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
-float liqLevelReading = 0;                  // variable to store liquid level reading, as a percentage
-float liqLevel =0;
+float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
+float liqLevel =0;                                  
 int liqLevelincomingByte = 0;                       // variable to store an incoming byte from serial communications  
 int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
 int liqLevelrefPin = A5;                            // signal pin for reference resistor
-int ledPin = 13;                            // select the pin for the LED
+int ledPin = 13;                                    // select the pin for the LED
 
 
 void setup() 
@@ -79,19 +79,19 @@ void loop()
      switch (incomingByte) 
      {
     case '10':    
-      calibrateEmpty(sensorValue);
+      calibrateEmpty(liqLevelsensorValue);
       break;
     case '11':    
-      calibrateFull(sensorValue);
+      calibrateFull(liqLevelsensorValue);
       break;
     case '12':    
-      linearFitSlope(sensorValue, calFullValue, slope);
+      linearFitSlope(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);
       break;
     default:
       Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
   }
 
-  liqLevel = liqLevelCalc(sensorValue, calFullValue, slope);                // run liqLevelCalc() on delay input
+  liqLevel = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
   delay(1000);                              // wait 1 s
  }
 
@@ -99,37 +99,37 @@ void loop()
 
 
 // function to take a calibration value for the sensor when the liquid level is in air
-float calibrateEmpty  (float sensorValue) 
+float calibrateEmpty  (float liqLevelsensorValue) 
 {
-  calEmptyValue = analogRead(sensorValue);
+  liqLevelcalEmptyValue = analogRead(liqLevelsensorValue);
   Serial.print("Empty Calibration Value = ");
-  Serial.println(calEmptyValue);
-  return calEmptyValue;
+  Serial.println(liqLevelcalEmptyValue);
+  return liqLevelcalEmptyValue;
 }
 
 // function to take a calibration value for the sensor when it is at 100%
-float calibrateFull (float sensorValue) 
+float calibrateFull (float liqLevelsensorValue) 
 {
-  calFullValue = analogRead(sensorValue);
+  calFullValue = analogRead(liqLevelsensorValue);
   Serial.print("Full Calibration Value = ");
-  Serial.println(calFullValue);
-  return calFullValue;
+  Serial.println(liqLevelcalFullValue);
+  return liqLevelcalFullValue;
 }
 
 // function to produce the slope needed for linear fit used to interpolate the liquid level
 // must be run AFTER calibrateEmpty() and calibrateFull()
-float linearFitSlope (float sensorValue, float calFullValue, float slope) 
+float linearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
 {
-  slope = 100/(calEmptyValue - calFullValue);
+  slope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
   Serial.print("Slope found = ");
-  Serial.println(slope);
+  Serial.println(liqLevelslope);
 }
 
 // function to determine the liquid level from a sensor value; sensor value is input
-float liqLevelCalc (float sensorValue, float calFullValue, float slope) 
+float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
 {
 	float result = 0;
-  result = calFullValue - slope * sensorValue;
+  result = liqLevelcalFullValue - liqLevelslope * liqLevelsensorValue;
   Serial.print("Liquid level = ");
   Serial.print(result);
   return result;
