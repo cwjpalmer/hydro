@@ -189,7 +189,7 @@
         // function to take a calibration value for the sensor when it is at 100%
         float liqLevelcalibrateFull (float liqLevelsensorValue) 
         {
-          calFullValue = analogRead(liqLevelsensorValue);
+          liqLevelcalFullValue = analogRead(liqLevelsensorValue);
           Serial.print("Full Calibration Value = ");
           Serial.println(liqLevelcalFullValue);
           return liqLevelcalFullValue;
@@ -199,7 +199,7 @@
         // must be run AFTER liqLevelcalibrateEmpty() and liqLevelcalibrateFull()
         float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
         {
-          slope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
+          liqLevelslope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
           Serial.print("Slope found = ");
           Serial.println(liqLevelslope);
         }
@@ -220,8 +220,8 @@
           liqLevelrefValue = analogRead(liqLevelrefPin);            // read the value from the reference resistor
 
           if (Serial.available() > 0){
-            incomingByte = Serial.read(); 
-            switch (incomingByte) {
+            liqLevelincomingByte = Serial.read(); 
+            switch (liqLevelincomingByte) {
               case '10':    
                 liqLevelcalibrateEmpty(liqLevelsensorValue);
                 break;

@@ -6,6 +6,11 @@
     #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
 void EepromRead();
 void logicSetup();
+float liqLevelcalibrateEmpty  (float liqLevelsensorValue);
+float liqLevelcalibrateFull (float liqLevelsensorValue);
+float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope);
+float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope);
+int getLiqLevel();
 void logicLoop();
 void InitDHT();
 void ReadDHT();
@@ -20,7 +25,7 @@ void FanDecreaseTemp();
 void FanIncreaseHumid();
 void FanDecreaseHumid();
 void FanControl();
-void TankProgControl();
+void TankProgControl ();
 void ManualRefilProg();
 void SDSetup();
 void SDLoop();
@@ -88,18 +93,17 @@ void loop();
   //UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT                  // commented out because not using touch screen
   //ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch                // commented out because not using touch screen
 
-    #define dht_dpin 69                        //pin for DHT11                      // [  ] 1 digital input, 10KOhm resistor, 5V
-    int pHPin = 59;                            //pin for pH probe                   // [  ] analog Pin
+    #define dht_dpin 44                        //pin for DHT11                      // [  ] 1 digital input, 10KOhm resistor, 5V
+    int pHPin = A0;                            //pin for pH probe                   // [  ] analog Pin
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
-    int pHMinPin = 43;                         //pin for Acide pump (relay)         // [  ] digital Pin
+    int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int floatLowPin = 7;                       //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
-    int floatHighPin = 8;                      //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
-    int lightSensor = 68;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
-    int sdPin = 53;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
-    const int chipSelect = 53;                 //pin for chipselect SD card         // [  ] digital pin 10 
-    int solenoidPin = 22;    // [ ] FIX IT!!! made this number up     // digital pin
-  //int liquidTemperaturePin = 23; // [ ] FIX IT!!! made this number up     // digital pin   LIQTfindMeTag
+    int floatLowPin = A1;                      //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
+    int floatHighPin = A2;                     //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
+    int lightSensor = A3;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
+    int sdPin = 10;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
+    int solenoidPin = 49;                      // digital pin
+  //int liquidTemperaturePin = 2;             // digital pin   LIQTfindMeTag
 
     /*      removed because used for LCD display
     extern uint8_t BigFont[];                  //Which fonts to use...
@@ -137,6 +141,22 @@ void loop();
     int EepromFanTemp = 40;       //location of FanTemp in Eeprom
     int EepromFanHumid = 60;      //location of FanHumid in Eeprom
 
+
+    /*LIQUID LEVEL VARIABLES*/
+    float liqLevelsensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
+    float liqLevelrefValue = 0;                         // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
+    float liqLevelcalEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
+    float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
+    float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
+    float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
+    float liqLevel =0;                                  
+    int liqLevelincomingByte = 0;                       // variable to store an incoming byte from serial communications  
+    int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
+    int liqLevelrefPin = A5;                            // signal pin for reference resistor
+    int ledPin = 13;                                    // select the pin for the LED
+    int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
+    int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
+
     DateTime now;                 //call current Date and Time
 
     #define DHTTYPE DHT11
@@ -158,7 +178,7 @@ void loop();
           FanHumid = EEPROM.read(EepromFanHumid);
         }
 
-         /* COMMENTED OUT BECAUSE I THINK ITS ONLY RELATED TO THE TOUCH SCREEN
+         /* COMMENTED OUT BECAUSE TOUCH SCREEN
          void graphSetup()
          {
         // Initial setup
@@ -188,6 +208,72 @@ void loop();
         Serial.println("__________________________________\n\n");
         delay(700);
         }
+
+        /*
+        ----- LIQUID LEVEL SENSOR FUNCTIONS -----
+        */
+
+        // function to take a calibration value for the sensor when the liquid level is in air
+        float liqLevelcalibrateEmpty  (float liqLevelsensorValue) 
+        {
+          liqLevelcalEmptyValue = analogRead(liqLevelsensorValue);
+          Serial.print("Empty Calibration Value = ");
+          Serial.println(liqLevelcalEmptyValue);
+          return liqLevelcalEmptyValue;
+        }
+
+        // function to take a calibration value for the sensor when it is at 100%
+        float liqLevelcalibrateFull (float liqLevelsensorValue) 
+        {
+          liqLevelcalFullValue = analogRead(liqLevelsensorValue);
+          Serial.print("Full Calibration Value = ");
+          Serial.println(liqLevelcalFullValue);
+          return liqLevelcalFullValue;
+        }
+
+        // function to produce the slope needed for linear fit used to interpolate the liquid level
+        // must be run AFTER liqLevelcalibrateEmpty() and liqLevelcalibrateFull()
+        float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
+        {
+          liqLevelslope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
+          Serial.print("Slope found = ");
+          Serial.println(liqLevelslope);
+        }
+
+        // function to determine the liquid level from a sensor value; sensor value is input
+        float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
+        {
+          float result = 0;
+          result = liqLevelcalFullValue - liqLevelslope * liqLevelsensorValue;
+          Serial.print("Liquid level = ");
+          Serial.print(result);
+          return result;
+        }
+
+        int getLiqLevel() {
+
+          liqLevelsensorValue = analogRead(liqLevelsensorPin);      // read the value from the sensor
+          liqLevelrefValue = analogRead(liqLevelrefPin);            // read the value from the reference resistor
+
+          if (Serial.available() > 0){
+            liqLevelincomingByte = Serial.read(); 
+            switch (liqLevelincomingByte) {
+              case '10':    
+                liqLevelcalibrateEmpty(liqLevelsensorValue);
+                break;
+              case '11':    
+                liqLevelcalibrateFull(liqLevelsensorValue);
+                break;
+              case '12':    
+                liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);
+                break;
+              default:
+                Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
+            }
+          liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
+          return liqLevelReading;
+          }
+        } 
 
 
         void logicLoop() { // loop that prints humidity lvl ("Luchtvochtigheid") <- that is the angriest humidity I have ever seen 
@@ -911,48 +997,15 @@ void loop();
           }
         }
 
-                                                                       // [] rewrite to use level sensor, instead of float switch as input
-        void TankProgControl() {                                        // this controls a solenoid to refill the tank as necessry based on the float switch
-          int levelHigh = LOW;
-          int levelLow = LOW;
-         
-          levelHigh = digitalRead(floatHighPin);
-          levelLow = digitalRead(floatLowPin);
-         
-          if (levelHigh == LOW) {
-            /*
-            if (page == 0) {
-              myGLCD.setColor(0, 0, 255);
-              myGLCD.print("HalfFull", 91, 207);
-            }
-            */
-            if (levelLow == LOW) {
-              /*
-              if (page == 0) {
-                myGLCD.setColor(0, 0, 255);
-                myGLCD.print("Filling ", 91, 207);
-              }
-              */
-              digitalWrite(solenoidPin, HIGH); //solenoid valve open.
+                                                                       // [x] rewrite to use level sensor, instead of float switch as input
+        void TankProgControl () {
+          if (getLiqLevel() < tankLowSetPoint) {
+            while (getLiqLevel() < tankHighSetPoint) {
+              digitalWrite(solenoidPin, HIGH);  //open solenoid valve
             }
           }
-          else
-          {
-            /*
-            if (page == 0) {
-              myGLCD.setColor(0, 0, 255);
-              myGLCD.print("Full    ", 91, 207);
-            }
-            */
-            if (levelLow == HIGH) {
-              digitalWrite(solenoidPin, LOW); //solenoid valve closed.
-              /*
-              if (page == 3) {
-                myGLCD.setColor(0, 0, 255);
-                myGLCD.print("OFF", 260, 171);
-              }
-              */
-            }
+          else {
+            digitalWrite(solenoidPin, LOW);     //close solenoid valve
           }
         }
 
@@ -1034,7 +1087,7 @@ void loop();
           Serial.print("Initializing SD card...");
           pinMode(sdPin, OUTPUT);
 
-          if (!SD.begin(chipSelect)) {                                // chipselect is the 
+          if (!SD.begin(sdPin)) {                                // chipselect is the 
             Serial.println("Card Failed, or not present");
             return;
           }
