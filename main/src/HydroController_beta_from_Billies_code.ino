@@ -126,7 +126,7 @@
           FanHumid = EEPROM.read(EepromFanHumid);
         }
 
-         /* COMMENTED OUT BECAUSE I THINK ITS ONLY RELATED TO THE TOUCH SCREEN
+         /* COMMENTED OUT BECAUSE TOUCH SCREEN
          void graphSetup()
          {
         // Initial setup
@@ -156,6 +156,74 @@
         Serial.println("__________________________________\n\n");
         delay(700);
         }
+
+        /*
+        ----- LIQUID LEVEL SENSOR FUNCTIONS -----
+        */
+
+        // function to take a calibration value for the sensor when the liquid level is in air
+        float liqLevelcalibrateEmpty  (float liqLevelsensorValue) 
+        {
+          liqLevelcalEmptyValue = analogRead(liqLevelsensorValue);
+          Serial.print("Empty Calibration Value = ");
+          Serial.println(liqLevelcalEmptyValue);
+          return liqLevelcalEmptyValue;
+        }
+
+        // function to take a calibration value for the sensor when it is at 100%
+        float liqLevelcalibrateFull (float liqLevelsensorValue) 
+        {
+          calFullValue = analogRead(liqLevelsensorValue);
+          Serial.print("Full Calibration Value = ");
+          Serial.println(liqLevelcalFullValue);
+          return liqLevelcalFullValue;
+        }
+
+        // function to produce the slope needed for linear fit used to interpolate the liquid level
+        // must be run AFTER liqLevelcalibrateEmpty() and liqLevelcalibrateFull()
+        float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
+        {
+          slope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
+          Serial.print("Slope found = ");
+          Serial.println(liqLevelslope);
+        }
+
+        // function to determine the liquid level from a sensor value; sensor value is input
+        float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
+        {
+          float result = 0;
+          result = liqLevelcalFullValue - liqLevelslope * liqLevelsensorValue;
+          Serial.print("Liquid level = ");
+          Serial.print(result);
+          return result;
+        }
+
+        int getLiqLevel() {
+
+          liqLevelsensorValue = analogRead(liqLevelsensorPin);      // read the value from the sensor
+          liqLevelrefValue = analogRead(liqLevelrefPin);            // read the value from the reference resistor
+
+          if (Serial.available() > 0){
+            incomingByte = Serial.read(); 
+             switch (incomingByte) {
+              case '10':    
+                liqLevelcalibrateEmpty(liqLevelsensorValue);
+                break;
+              case '11':    
+                liqLevelcalibrateFull(liqLevelsensorValue);
+                break;
+              case '12':    
+                liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);
+                break;
+              default:
+                Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
+          }
+
+          liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
+          return liqLevelReading;
+         }
+
+        } 
 
 
         void logicLoop() { // loop that prints humidity lvl ("Luchtvochtigheid") <- that is the angriest humidity I have ever seen 
