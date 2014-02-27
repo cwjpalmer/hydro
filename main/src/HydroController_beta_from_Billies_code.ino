@@ -105,6 +105,20 @@
     int EepromFanTemp = 40;       //location of FanTemp in Eeprom
     int EepromFanHumid = 60;      //location of FanHumid in Eeprom
 
+
+    /*LIQUID LEVEL VARIABLES*/
+    float liqLevelsensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
+    float liqLevelrefValue = 0;                         // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
+    float liqLevelcalEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
+    float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
+    float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
+    float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
+    float liqLevel =0;                                  
+    int liqLevelincomingByte = 0;                       // variable to store an incoming byte from serial communications  
+    int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
+    int liqLevelrefPin = A5;                            // signal pin for reference resistor
+    int ledPin = 13;                                    // select the pin for the LED
+
     DateTime now;                 //call current Date and Time
 
     #define DHTTYPE DHT11
