@@ -67,7 +67,7 @@
     int lightSensor = A3;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int sdPin = 10;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     int solenoidPin = 49;                      // digital pin
-  //int liquidTemperaturePin = 50;             // digital pin   LIQTfindMeTag
+  //int liquidTemperaturePin = 2;             // digital pin   LIQTfindMeTag
 
     /*      removed because used for LCD display
     extern uint8_t BigFont[];                  //Which fonts to use...
