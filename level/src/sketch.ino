@@ -79,19 +79,19 @@ void loop()
      switch (incomingByte) 
      {
     case '10':    
-      calibrateEmpty(liqLevelsensorValue);
+      liqLevelcalibrateEmpty(liqLevelsensorValue);
       break;
     case '11':    
-      calibrateFull(liqLevelsensorValue);
+      liqLevelcalibrateFull(liqLevelsensorValue);
       break;
     case '12':    
-      linearFitSlope(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);
+      liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);
       break;
     default:
       Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
   }
 
-  liqLevel = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
+  liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
   delay(1000);                              // wait 1 s
  }
 
@@ -99,7 +99,7 @@ void loop()
 
 
 // function to take a calibration value for the sensor when the liquid level is in air
-float calibrateEmpty  (float liqLevelsensorValue) 
+float liqLevelcalibrateEmpty  (float liqLevelsensorValue) 
 {
   liqLevelcalEmptyValue = analogRead(liqLevelsensorValue);
   Serial.print("Empty Calibration Value = ");
@@ -108,7 +108,7 @@ float calibrateEmpty  (float liqLevelsensorValue)
 }
 
 // function to take a calibration value for the sensor when it is at 100%
-float calibrateFull (float liqLevelsensorValue) 
+float liqLevelcalibrateFull (float liqLevelsensorValue) 
 {
   calFullValue = analogRead(liqLevelsensorValue);
   Serial.print("Full Calibration Value = ");
@@ -117,8 +117,8 @@ float calibrateFull (float liqLevelsensorValue)
 }
 
 // function to produce the slope needed for linear fit used to interpolate the liquid level
-// must be run AFTER calibrateEmpty() and calibrateFull()
-float linearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
+// must be run AFTER liqLevelcalibrateEmpty() and liqLevelcalibrateFull()
+float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
 {
   slope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
   Serial.print("Slope found = ");
