@@ -118,6 +118,8 @@
     int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
     int liqLevelrefPin = A5;                            // signal pin for reference resistor
     int ledPin = 13;                                    // select the pin for the LED
+    int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
+    int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
 
     DateTime now;                 //call current Date and Time
 
@@ -219,7 +221,7 @@
 
           if (Serial.available() > 0){
             incomingByte = Serial.read(); 
-             switch (incomingByte) {
+            switch (incomingByte) {
               case '10':    
                 liqLevelcalibrateEmpty(liqLevelsensorValue);
                 break;
@@ -231,12 +233,10 @@
                 break;
               default:
                 Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
-          }
-
+            }
           liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
           return liqLevelReading;
-         }
-
+          }
         } 
 
 
@@ -961,48 +961,15 @@
           }
         }
 
-                                                                       // [] rewrite to use level sensor, instead of float switch as input
-        void TankProgControl() {                                        // this controls a solenoid to refill the tank as necessry based on the float switch
-          int levelHigh = LOW;
-          int levelLow = LOW;
-         
-          levelHigh = digitalRead(floatHighPin);
-          levelLow = digitalRead(floatLowPin);
-         
-          if (levelHigh == LOW) {
-            /*
-            if (page == 0) {
-              myGLCD.setColor(0, 0, 255);
-              myGLCD.print("HalfFull", 91, 207);
-            }
-            */
-            if (levelLow == LOW) {
-              /*
-              if (page == 0) {
-                myGLCD.setColor(0, 0, 255);
-                myGLCD.print("Filling ", 91, 207);
-              }
-              */
-              digitalWrite(solenoidPin, HIGH); //solenoid valve open.
+                                                                       // [x] rewrite to use level sensor, instead of float switch as input
+        void TankProgControl () {
+          if (getLiqLevel() < tankLowSetPoint) {
+            while (getLiqLevel() < tankHighSetPoint) {
+              digitalWrite(solenoidPin, HIGH);  //open solenoid valve
             }
           }
-          else
-          {
-            /*
-            if (page == 0) {
-              myGLCD.setColor(0, 0, 255);
-              myGLCD.print("Full    ", 91, 207);
-            }
-            */
-            if (levelLow == HIGH) {
-              digitalWrite(solenoidPin, LOW); //solenoid valve closed.
-              /*
-              if (page == 3) {
-                myGLCD.setColor(0, 0, 255);
-                myGLCD.print("OFF", 260, 171);
-              }
-              */
-            }
+          else {
+            digitalWrite(solenoidPin, LOW);     //close solenoid valve
           }
         }
 
