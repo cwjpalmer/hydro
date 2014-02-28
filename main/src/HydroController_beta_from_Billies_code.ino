@@ -51,7 +51,7 @@
     #include "RTClib.h"                        //Real Time Clock library
     #include <EEPROMex.h>                      //Extended Eeprom library
     #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
-  //#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor ... get it via $git clone https://github.com/milesburton/Arduino-Temperature-Control-Library.git
+  //#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
 
 
   //UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT                  // commented out because not using touch screen
