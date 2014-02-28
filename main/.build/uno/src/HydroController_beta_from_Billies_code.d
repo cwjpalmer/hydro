@@ -10,10 +10,6 @@
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/Printable.h \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/new.h \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard/pins_arduino.h \
-  lib/SD/SD.h lib/SD/utility/SdFat.h lib/SD/utility/Sd2Card.h \
-  lib/SD/utility/Sd2PinMap.h lib/SD/utility/SdInfo.h \
-  lib/SD/utility/FatStructs.h \
-  /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/Print.h \
-  lib/SD/utility/SdFatUtil.h lib/Wire/Wire.h \
+  lib/Wire/Wire.h \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/Stream.h \
   lib/RTClib/RTClib.h lib/EEPROMEx/EEPROMex.h lib/OneWire/OneWire.h

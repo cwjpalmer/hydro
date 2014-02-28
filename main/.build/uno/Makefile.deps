@@ -10,43 +10,25 @@
 
 
 
-.build/uno/SD/File.d : lib/SD/File.cpp
-	@mkdir -p .build/uno/SD
-	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/SD/utility -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
+.build/uno/Wire/utility/twi.d : lib/Wire/utility/twi.c
+	@mkdir -p .build/uno/Wire/utility
+	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
 	
-	@printf ".build/uno/SD/File.d .build/uno/SD/" | cat - $@ > $@~ && mv $@~ $@
+	@printf ".build/uno/Wire/utility/twi.d .build/uno/Wire/utility/" | cat - $@ > $@~ && mv $@~ $@
 
-.build/uno/SD/SD.d : lib/SD/SD.cpp
-	@mkdir -p .build/uno/SD
-	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/SD/utility -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
+.build/uno/Wire/Wire.d : lib/Wire/Wire.cpp
+	@mkdir -p .build/uno/Wire
+	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
 	
-	@printf ".build/uno/SD/SD.d .build/uno/SD/" | cat - $@ > $@~ && mv $@~ $@
-
-.build/uno/SD/utility/Sd2Card.d : lib/SD/utility/Sd2Card.cpp
-	@mkdir -p .build/uno/SD/utility
-	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/SD/utility -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
-	
-	@printf ".build/uno/SD/utility/Sd2Card.d .build/uno/SD/utility/" | cat - $@ > $@~ && mv $@~ $@
-
-.build/uno/SD/utility/SdFile.d : lib/SD/utility/SdFile.cpp
-	@mkdir -p .build/uno/SD/utility
-	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/SD/utility -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
-	
-	@printf ".build/uno/SD/utility/SdFile.d .build/uno/SD/utility/" | cat - $@ > $@~ && mv $@~ $@
-
-.build/uno/SD/utility/SdVolume.d : lib/SD/utility/SdVolume.cpp
-	@mkdir -p .build/uno/SD/utility
-	@/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/avr-libc -Ilib/EEPROMEx -Ilib/EEPROMEx/Examples -Ilib/EEPROMEx/Examples/EEPROMEx -Ilib/EEPROMEx/Examples/EEPROMVar -Ilib/OneWire -Ilib/RTClib -Ilib/SD -Ilib/SD/utility -Ilib/Wire -Ilib/Wire/utility  -MM $^ > $@
-	
-	@printf ".build/uno/SD/utility/SdVolume.d .build/uno/SD/utility/" | cat - $@ > $@~ && mv $@~ $@
+	@printf ".build/uno/Wire/Wire.d .build/uno/Wire/" | cat - $@ > $@~ && mv $@~ $@
 
 
 
-.build/uno/SD/dependencies.d : .build/uno/SD/File.d .build/uno/SD/SD.d .build/uno/SD/utility/Sd2Card.d .build/uno/SD/utility/SdFile.d .build/uno/SD/utility/SdVolume.d
-	@echo [96mScanning dependencies of SD[0m
-	@mkdir -p .build/uno/SD
+.build/uno/Wire/dependencies.d : .build/uno/Wire/utility/twi.d .build/uno/Wire/Wire.d
+	@echo [96mScanning dependencies of Wire[0m
+	@mkdir -p .build/uno/Wire
 	@cat $^ > $@;
 
-all : .build/uno/SD/dependencies.d
+all : .build/uno/Wire/dependencies.d
 	@true
 
