@@ -1,5 +1,4 @@
-.build/uno/src/HydroController_beta_from_Billies_code.d .build/uno/src/HydroController_beta_from_Billies_code.o:  \
- .build/uno/src/HydroController_beta_from_Billies_code.cpp \
+.build/uno/src/RTC_test.d .build/uno/src/RTC_test.o: .build/uno/src/RTC_test.cpp \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/Arduino.h \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/binary.h \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/WCharacter.h \
@@ -12,4 +11,4 @@
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/variants/standard/pins_arduino.h \
   lib/Wire/Wire.h \
   /Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/cores/arduino/Stream.h \
-  lib/RTClib/RTClib.h lib/EEPROMEx/EEPROMex.h lib/OneWire/OneWire.h
+  lib/RTClib/RTClib.h
