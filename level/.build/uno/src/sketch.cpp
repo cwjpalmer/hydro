@@ -4,7 +4,7 @@ void setup();
 void loop();
 float liqLevelcalibrateEmpty  (float liqLevelsensorValue);
 float liqLevelcalibrateFull (float liqLevelsensorValue);
-float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope);
+float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue);
 float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope);
 #line 1 "src/sketch.ino"
 /*
@@ -58,6 +58,7 @@ int liqLevelsensorPin = A4;                         // select the input pin for 
 int liqLevelrefPin = A5;                            // signal pin for reference resistor
 int ledPin = 13;                                    // select the pin for the LED
 
+int incomingByte = 10;
 
 void setup() 
 {
@@ -94,7 +95,7 @@ void loop()
       liqLevelcalibrateFull(liqLevelsensorValue);
       break;
     case '12':    
-      liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);
+      liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue);
       break;
     default:
       Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
@@ -119,7 +120,7 @@ float liqLevelcalibrateEmpty  (float liqLevelsensorValue)
 // function to take a calibration value for the sensor when it is at 100%
 float liqLevelcalibrateFull (float liqLevelsensorValue) 
 {
-  calFullValue = analogRead(liqLevelsensorValue);
+  liqLevelcalFullValue = analogRead(liqLevelsensorValue);
   Serial.print("Full Calibration Value = ");
   Serial.println(liqLevelcalFullValue);
   return liqLevelcalFullValue;
@@ -127,11 +128,12 @@ float liqLevelcalibrateFull (float liqLevelsensorValue)
 
 // function to produce the slope needed for linear fit used to interpolate the liquid level
 // must be run AFTER liqLevelcalibrateEmpty() and liqLevelcalibrateFull()
-float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
+float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue) 
 {
-  slope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
+  float liqLevelslope = 100/(liqLevelcalEmptyValue - liqLevelcalFullValue);
   Serial.print("Slope found = ");
   Serial.println(liqLevelslope);
+  return liqLevelslope;
 }
 
 // function to determine the liquid level from a sensor value; sensor value is input
