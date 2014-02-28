@@ -1132,8 +1132,17 @@
                 case '9':
                   ManualRefilProg();                            // manual order to fill the tank
                   break;
+                case '10':    
+                  //liqLevelcalibrateEmpty(liqLevelsensorValue);
+                  break;
+                case '11':    
+                  //liqLevelcalibrateFull(liqLevelsensorValue);
+                  break;
+                case '12':    
+                  //liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue);
+                  break;
                 default:
-                  Serial.println('Invalid input. Enter 1-9');   // else return error
+                  Serial.println('Invalid input. Enter 1-12');   // else return error
               }
           }
         }
