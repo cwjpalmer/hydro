@@ -523,7 +523,6 @@
 
      
 
-
         void SDLoop()                                                // print data to SD card as a CSV
         {
           File dataFile = SD.open("LOGGER00.CSV", FILE_WRITE);
