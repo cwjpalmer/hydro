@@ -1,3 +1,12 @@
+#include <Arduino.h>
+
+void setup();
+void loop();
+float liqLevelcalibrateEmpty  (float liqLevelsensorValue);
+float liqLevelcalibrateFull (float liqLevelsensorValue);
+float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullValue);
+float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope);
+#line 1 "src/sketch.ino"
 /*
 ----- OPENING COMMENT BLOCK -----
 
@@ -48,7 +57,7 @@ int liqLevelincomingByte = 0;                       // variable to store an inco
 int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
 int liqLevelrefPin = A5;                            // signal pin for reference resistor
 int ledPin = 13;                                    // select the pin for the LED
-int incomingByte = 0;
+
 
 void setup() 
 {
@@ -60,7 +69,7 @@ void setup()
 void loop() 
 {
 
-  Serial.begin(9600);
+
   liqLevelsensorValue = analogRead(liqLevelsensorPin);      // read the value from the sensor
   liqLevelrefValue = analogRead(liqLevelrefPin);            // read the value from the reference resistor
  
@@ -70,7 +79,7 @@ void loop()
   Serial.println(liqLevelsensorValue);              // stop the program for <sensorValue> milliseconds:
   delay(liqLevelsensorValue);                       // wait for an amount of time proportional to the sensor
   digitalWrite(ledPin, LOW);                // turn the ledPin off:       
-  delay(1000);                       // stop the program for for <sensorValue> milliseconds:
+  delay(liqLevelsensorValue);                       // stop the program for for <sensorValue> milliseconds:
 
 
   if (Serial.available() > 0) 
