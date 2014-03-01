@@ -23,10 +23,13 @@
 
 
 
-    #define DHTPIN 44                           //pin for DHT22                      // [  ] 1 digital input, 10KOhm resistor, 5V
+    #define DHTPIN 44                          //pin for DHT22                      // [  ] 1 digital input, 10KOhm resistor, 5V
     #define redLEDpin 2                        //LEDs on SD card
     #define greenLEDpin 3                      //LEDs on SD Card 
     #define DHTTYPE DHT22                      // DHT 22  (AM2302)
+
+    #define ECHO_TO_SERIAL   1                 // echo data to serial port
+    #define WAIT_TO_START    0                 // Wait for serial input in setup()
 
     DHT dht(DHTPIN, DHTTYPE);
 
@@ -36,9 +39,11 @@
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
     int floatLowPin = A1;                      //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
     int floatHighPin = A2;                     //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
-    int lightSensor = A3;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
+    int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int sdPin = 10;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     int solenoidPin = 49;                      // digital pin
+    float h;
+    float t;
   //int liquidTemperaturePin = 2;             // digital pin   LIQTfindMeTag
 
 
@@ -88,7 +93,6 @@
     int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
     int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
 
-    DateTime now;                 //call current Date and Time
 
     byte bGlobalErr;    //for passing error code back.
 
@@ -117,7 +121,6 @@
          
         pmem==0;
          
-        Serial.begin(9600);
         delay(300);
         Serial.println("System Booting!");
         Serial.println("__________________________________\n\n");
@@ -150,8 +153,8 @@
 
         // Reading temperature or humidity takes about 250 milliseconds!
         // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-        float h = dht.readHumidity();
-        float t = dht.readTemperature();
+        h = dht.readHumidity();
+        t = dht.readTemperature();
 
         // check if returns are valid, if they are NaN (not a number) then something went wrong!
         if (isnan(t) || isnan(h)) {
@@ -307,7 +310,7 @@
         
         }
 
-/*
+
         void FanControl() {                                            // control the fan based on DHT sensor T and Humididity
           if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - note not 100% sure the DHT[] values are T and H, but logicall they should be
             digitalWrite(ventilatorPin, HIGH);
@@ -316,7 +319,7 @@
             digitalWrite(ventilatorPin, LOW);
           }
         }
-*/
+
                                                                        // [x] rewrite to use level sensor, instead of float switch as input
         void TankProgControl () {
           if (getLiqLevel() < tankLowSetPoint) {
@@ -411,7 +414,7 @@
 
 
 
-        void SDSetup()                                                // set up SD card
+        void SDSetup()                                                // set up SD card & RTC
         {
 
           // initialize the SD card
@@ -446,6 +449,9 @@
 
             Serial.print("Logging to: ");
             Serial.println(filename);
+
+            //return filename;
+
         }
 
      
@@ -453,7 +459,10 @@
         void SDLoop()                                                // print data to SD card as a CSV
         {
           File dataFile = SD.open("LOGGER00.CSV", FILE_WRITE);
-         
+          
+          DateTime now;
+          now = RTC.now();
+          
           if (dataFile) {
             now = RTC.now();
             dataFile.print(pH);
@@ -487,8 +496,11 @@
 
         void timeSetup()                                            // start time
         {
-          Wire.begin();
-          RTC.begin();
+            Wire.begin();  
+            if (!RTC.begin()) {
+            logfile.println("RTC failed");
+            Serial.println("RTC failed");
+            }    
         }
 
         void followSerialCommand() {
@@ -530,11 +542,14 @@
         }
 
         void setup() {
-          delay(2000);
-          println("System initializing");
+          Serial.begin(9600);
+          Serial.println();
+          delay(1000);
+          Serial.println("System initializing");
           EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
           delay(1000);
           dht.begin();
+          delay(1000);
           logicSetup();             // set some pinmodes and begin serial comms
           delay(1000);
           timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
@@ -546,7 +561,7 @@
          void loop() {
            logicLoop();             // change control variables based on system state, serial print process variables
            fotoLoop();              // calculate and serial print light level
-           //FanControl();            // control fan from T and Humid
+           FanControl();            // control fan from T and Humid
            //TankProgControl();       // [] MUST REWRITE fill tank if below float level
            SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
