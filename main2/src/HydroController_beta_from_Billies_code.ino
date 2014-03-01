@@ -1,6 +1,3 @@
-//#include <EEPROMex.h> //WTF is there 'xx' here?
-//#include <EEPROMVar.h>
-
   /* 
   THIS VERSION IS MODIFIED FROM THE ORIGINAL VERSION
   ALL CODE PERTAINING TO THE LCD SCREEN IS BEING COMMENTED OUT
@@ -13,39 +10,9 @@
     ****Made by Tom De Bie for anyone who can find a use for it ;)****
     ******************************************************************
     ******************************************************************
-    Software Requirements:
-    ----------------------
-    -Arduino IDE 1.0
-    -UTFT library
-    -ITDB02_Touch library
-    -SD library
-    -Wire library
-    -RTClib library
-    -EEPROM library
-    -EEPROMex library
-
-    Hardware Requirements:
-    ----------------------
-    -Arduino Mega 2560
-    -3.2 inch TFT Touchscreen
-    -LC Studio SD Cardreader
-    -DS1307 Real Time Clock module
-    -Phidgets 1130 pH/ORP module
-    -4 channel Relay 220V/10Amp
-    -DHT11 or DHT22 sensor
-    -pH electrode probe with BNC connector
-    -Photoresistor
-    -Solenoid valve 12V
-    -2x Peristaltic pump
-    -2x Duckbill side waterlevel Float sensor
-    -resistors (220ohm - 1Kohm)
-    -Cermet Potentiometer 110Kohm
-    -Protoboard
-    -9V DC powersupply
+  
     */
 
-  //#include <UTFT.h>                          //16bit TFT screen library            // commented out because not using touch screen
-  //#include <ITDB02_Touch.h>                  //Touchscreen library                 // commented out because not using touch screen
     #include <SD.h>                            //SD card library
     #include <Wire.h>                          //One Wire library
     #include "RTClib.h"                        //Real Time Clock library
@@ -54,10 +21,10 @@
   //#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
 
 
-  //UTFT myGLCD(ITDB32S,38,39,40,41);          //pins used for TFT                  // commented out because not using touch screen
-  //ITDB02_Touch  myTouch(6,5,4,3,2);          //pins used for Touch                // commented out because not using touch screen
-
     #define dht_dpin 44                        //pin for DHT11                      // [  ] 1 digital input, 10KOhm resistor, 5V
+    #define redLEDpin 2                        //LEDs on SD card
+    #define greenLEDpin 3                      //LEDs on SD Card 
+
     int pHPin = A0;                            //pin for pH probe                   // [  ] analog Pin
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
@@ -69,12 +36,14 @@
     int solenoidPin = 49;                      // digital pin
   //int liquidTemperaturePin = 2;             // digital pin   LIQTfindMeTag
 
-    /*      removed because used for LCD display
-    extern uint8_t BigFont[];                  //Which fonts to use...
-    extern uint8_t SmallFont[];
-    extern uint8_t SevenSegNumFont[];
-    */
 
+    File logfile;                               //indicate CSV file exists 
+    
+
+
+
+
+  
     RTC_DS1307 RTC;                            //Define RTC module
 
     //****************************************************************//
@@ -141,9 +110,12 @@
           FanHumid = EEPROM.read(EepromFanHumid);
         }
 
+        void InitDHT() { // setup DHT sensor
+            pinMode(dht_dpin,OUTPUT);
+            digitalWrite(dht_dpin,HIGH);
+        }
 
         void logicSetup() {
-         
         pinMode(pHPlusPin, OUTPUT);
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
@@ -160,9 +132,6 @@
         delay(700);
         }
 
-        /*
-        ----- LIQUID LEVEL SENSOR FUNCTIONS -----
-        */
 
 
         // function to determine the liquid level from a sensor value; sensor value is input
@@ -182,7 +151,7 @@
           liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
           return liqLevelReading;
           }
-        } 
+         
 
 
         void logicLoop() { // loop that prints humidity lvl ("Luchtvochtigheid") <- that is the angriest humidity I have ever seen 
@@ -267,10 +236,7 @@
         }
                  
          
-        void InitDHT() { // setup DHT sensor
-            pinMode(dht_dpin,OUTPUT);
-            digitalWrite(dht_dpin,HIGH);
-        }
+
 
         void ReadDHT() {
           bGlobalErr=0;
@@ -344,7 +310,7 @@
           }
         }
 
-        
+
 
 
         void phIncreaseSetpoint() {
@@ -509,8 +475,51 @@
           */
         }
 
+
+        void error(char *str)                                        // error function assocaited with SD card 
+        {
+          Serial.print("error: ");
+          Serial.println(str); 
+
+          // red LED indicates error
+          digitalWrite(redLEDpin, HIGH);
+
+          while(1);
+        }
+
+
+
         void SDSetup()                                                // set up SD card
         {
+          // use debugging LEDs
+          pinMode(redLEDpin, OUTPUT);
+          pinMode(greenLEDpin, OUTPUT);
+
+          if (!SD.begin(sdPin)) {
+              error("Card failed, or not present");
+            }
+            Serial.println("card initialized.");
+
+            // create a new file
+            char filename[] = "DATALOG.CSV";
+            for (uint8_t i = 0; i < 100; i++) {
+              filename[6] = i/10 + '0';
+              filename[7] = i%10 + '0';
+              if (! SD.exists(filename)) {
+                // only open a new file if it doesn't exist
+                logfile = SD.open(filename, FILE_WRITE); 
+                break;  // leave the loop!
+              }
+            }
+
+            if (! logfile) {
+              error("couldnt create file");
+            }
+
+            Serial.print("Logging to: ");
+            Serial.println(filename);
+
+
           Serial.print("Initializing SD card...");
           pinMode(sdPin, OUTPUT);
 
@@ -525,7 +534,7 @@
 
         void SDLoop()                                                // print data to SD card as a CSV
         {
-          File dataFile = SD.open("datalog.csv", FILE_WRITE);
+          File dataFile = SD.open("DATALOG.csv", FILE_WRITE);
          
           if (dataFile) {
             now = RTC.now();
@@ -554,7 +563,7 @@
             dataFile.close();
           }
           else {
-            Serial.println("error opening datalog.csv");
+            Serial.println("error opening DATALOG.CSV");
           }
         }
 
@@ -616,8 +625,9 @@
          void loop() {
            logicLoop();             // change control variables based on system state, serial print process variables
            fotoLoop();              // calculate and serial print light level
-           FanControl();            // control fan from T and Humid
-           TankProgControl();       // [] MUST REWRITE fill tank if below float level
+           //FanControl();            // control fan from T and Humid
+           //TankProgControl();       // [] MUST REWRITE fill tank if below float level
            SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
+           delay(1000);
          }
