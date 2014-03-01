@@ -594,7 +594,7 @@
                   ManualRefilProg();                            // manual order to fill the tank
                   break;
                 default:
-                  Serial.println('Invalid input. Enter 1-12');
+                  Serial.println('Invalid input. Enter 1-9');
                   break;   // else return error
               }
           }
