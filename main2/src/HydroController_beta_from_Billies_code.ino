@@ -467,12 +467,7 @@
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
         {
           digitalWrite(solenoidPin, HIGH);
-          /*
-          if (page == 3) {                                             // LCD screen stuff - []remove
-            myGLCD.setColor(255, 255, 0);
-            myGLCD.print("ON ", 260, 171);
-          }
-          */
+
         }
 
 
@@ -491,17 +486,23 @@
 
         void SDSetup()                                                // set up SD card
         {
+
+          // initialize the SD card
+          Serial.print("Initializing SD card...");
+          // make sure that the default chip select pin is set to
+          // output, even if you don't use it:
+          pinMode(10, OUTPUT);
           // use debugging LEDs
           pinMode(redLEDpin, OUTPUT);
           pinMode(greenLEDpin, OUTPUT);
 
-          if (!SD.begin(sdPin)) {
+          if (!SD.begin(10, 11, 12, 13)) {
               error("Card failed, or not present");
             }
             Serial.println("card initialized.");
 
             // create a new file
-            char filename[] = "DATALOG.CSV";
+            char filename[] = "LOGGER00.CSV";
             for (uint8_t i = 0; i < 100; i++) {
               filename[6] = i/10 + '0';
               filename[7] = i%10 + '0';
@@ -518,23 +519,14 @@
 
             Serial.print("Logging to: ");
             Serial.println(filename);
-
-
-          Serial.print("Initializing SD card...");
-          pinMode(sdPin, OUTPUT);
-
-          if (!SD.begin(sdPin)) {                                // chipselect is the 
-            Serial.println("Card Failed, or not present");
-            return;
-          }
-          Serial.println("card initialized.");
         }
 
+     
 
 
         void SDLoop()                                                // print data to SD card as a CSV
         {
-          File dataFile = SD.open("DATALOG.csv", FILE_WRITE);
+          File dataFile = SD.open("LOGGER00.CSV", FILE_WRITE);
          
           if (dataFile) {
             now = RTC.now();
