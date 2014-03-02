@@ -14,12 +14,12 @@ It takes the analog input from the variable resistor on the level sensor, reads 
 
 
 // the value of the 'other' resistor
-#define SERIESRESISTOR 2250                 // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
+#define liqLevelRefResistor 2250                 // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
  
 // What pin to connect the sensor to
-#define SENSORPIN 48 
+#define liqLevelSensorPin 48 
 
-// set the internal ledPin, for easy testing outside main system
+// set the internal ledPin, for easy testing outside main system  
 #define ledPin 13
 
 void setup() 
@@ -32,14 +32,14 @@ void loop()
 {
   float reading;
  
-  reading = analogRead(SENSORPIN);
+  reading = analogRead(liqLevelSensorPin);
  
   Serial.print("Analog reading "); 
   Serial.println(reading);
  
   // convert the value to resistance
   reading = (1023 / reading)  - 1;
-  reading = SERIESRESISTOR / reading;
+  reading = liqLevelRefResistor / reading;
   Serial.print("Sensor resistance "); 
   Serial.println(reading);
  
