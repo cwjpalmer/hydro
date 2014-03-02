@@ -19,6 +19,9 @@ It takes the analog input from the variable resistor on the level sensor, reads 
 // What pin to connect the sensor to
 #define SENSORPIN 48 
 
+// set the internal ledPin, for easy testing outside main system
+#define ledPin 13
+
 void setup() 
 {
   pinMode(ledPin, OUTPUT);                  // declare the ledPin as an OUTPUT:
