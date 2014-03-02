@@ -48,10 +48,11 @@
     int floatHighPin = A2;                     //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
     int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int sdPin = 10;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
-    int solenoidPin = 49;                      // digital pin
-    float h;
-    float t;
-  //int liquidTemperaturePin = 2;             // digital pin   LIQTfindMeTag
+    int solenoidPin = 49;                      //digital pin
+    float h;                                   //humidity 
+    float t;                                   //temperature
+  //int liquidTemperaturePin = 2;              //digital pin   LIQTfindMeTag
+    char filename[] = "LOGGER00.CSV";          //filename for CSV file
 
 
     File logfile;                               //indicate CSV file exists 
@@ -103,12 +104,6 @@
 
     byte bGlobalErr;    //for passing error code back.
 
-
-    /*
-                VOID SETUP AND VOID LOOP MOVED TO END OF DOCUMENT
-                functions must be defined before they are called,
-                so they had to be at the end
-    */
          
          // - DISABLE EEPROM WHEN NOT REQUIRED - specified life of 100k write/erase cycles
          void EepromRead() { // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
@@ -444,7 +439,6 @@
             Serial.println("card initialized.");
 
             // create a new file
-            char filename[] = "LOGGER00.CSV";
             for (uint8_t i = 0; i < 100; i++) {
               filename[6] = i/10 + '0';
               filename[7] = i%10 + '0';
@@ -462,9 +456,8 @@
             Serial.print("Logging to: ");
             Serial.println(filename);
 
-            //return filename;
-
-           logfile.println("pH,temp,humidity,light,date");
+           File dataFile = SD.open(filename, FILE_WRITE); 
+           dataFile.print("pH,temp,humidity,light,date");
 
         }
 
@@ -472,8 +465,8 @@
 
         void SDLoop()                                                // print data to SD card as a CSV
         {
-          File dataFile = SD.open("LOGGER00.CSV", FILE_WRITE);
-          
+          File dataFile = SD.open(filename, FILE_WRITE);
+
           DateTime now;
           now = RTC.now();
           
