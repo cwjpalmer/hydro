@@ -55,6 +55,9 @@
   //int liquidTemperaturePin = 2;              //digital pin   LIQTfindMeTag
     char filename[] = "LOGGER00.CSV";          //filename for CSV file
 
+    int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
+    int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
+
 
     File logfile;                               //indicate CSV file exists 
     RTC_DS1307 RTC;                            //Define RTC module
