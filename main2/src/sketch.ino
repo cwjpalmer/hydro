@@ -94,8 +94,7 @@
     float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
     float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
     float liqLevel =0;                                  
-    int liqLevelsensorPin = 14;                         // select the input pin for the potentiometer that responds to liquid level
-    int liqLevelrefPin = 15;                            // signal pin for reference resistor
+    int liqLevelsensorPin = 48;                         // select the input pin for the potentiometer that responds to liquid level
     int ledPin = 13;                                    // select the pin for the LED
     int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
     int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %

@@ -17,7 +17,7 @@ It takes the analog input from the variable resistor on the level sensor, reads 
 #define SERIESRESISTOR 2250                 // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
  
 // What pin to connect the sensor to
-#define SENSORPIN 14 
+#define SENSORPIN 48 
 
 void setup() 
 {
