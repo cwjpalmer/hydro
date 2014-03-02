@@ -72,8 +72,8 @@
     float HysterisMin;                 
     float HysterisPlus;
     float SetHysteris;
-    float FanTemp;
-    float FanHumid;
+    float FanTemp = 15;                   
+    float FanHumid = 98;                 
     //float liquidTemperature;           // variable to hold temperature of liquid from waterproof thermometer LIQTfindMeTag
 
     int lightADCReading;
@@ -90,12 +90,12 @@
     /*LIQUID LEVEL VARIABLES*/
     float liqLevelsensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
     float liqLevelrefValue = 0;                         // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
-    float liqLevelcalFullValue = 900;                     // variable to store the raw value yielded by full calibration 
-    float liqLevelslope = 12;                            // variable to store the calculated value of the slope, for liq level calc
+    float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
+    float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
     float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
     float liqLevel =0;                                  
-    int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
-    int liqLevelrefPin = A5;                            // signal pin for reference resistor
+    int liqLevelsensorPin = 14;                         // select the input pin for the potentiometer that responds to liquid level
+    int liqLevelrefPin = 15;                            // signal pin for reference resistor
     int ledPin = 13;                                    // select the pin for the LED
     int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
     int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
@@ -108,8 +108,8 @@
          void EepromRead() { // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
           Setpoint = EEPROM.readFloat(EepromSetpoint);
           SetHysteris = EEPROM.readFloat(EepromSetHysteris);
-          FanTemp = EEPROM.read(EepromFanTemp);
-          FanHumid = EEPROM.read(EepromFanHumid);
+          //FanTemp = EEPROM.read(EepromFanTemp);
+          //FanHumid = EEPROM.read(EepromFanHumid);
         }
 
 
@@ -220,7 +220,8 @@
           Serial.println(SetHysteris);       
           Serial.print("pH = ");
           Serial.println(pH);
-
+          Serial.print("FanHumid = ");
+          Serial.println(FanHumid);
                  
         }
                  
@@ -315,15 +316,15 @@
 
 
         void FanControl() {                                            // control the fan based on DHT sensor T and Humididity
-          //if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - note not 100% sure the DHT[] values are T and H, but logicall they should be
-            // digitalWrite(ventilatorPin, HIGH);    // actual solenoid control
+          if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - 
+            //digitalWrite(ventilatorPin, HIGH);    // actual solenoid control
             digitalWrite(LED_FAN_PIN, HIGH);    // LED representation 
 
-          //}
-          //else {
+          }
+          else {
             // digitalWrite(ventilatorPin, LOW);    // actual solenoid control
-         //   digitalWrite(LED_FAN_PIN, LOW);    // LED representation
-         // }
+           digitalWrite(LED_FAN_PIN, LOW);    // LED representation
+         }
         }
 
                                                                        // [x] rewrite to use level sensor, instead of float switch as input
@@ -551,15 +552,10 @@
           Serial.begin(9600);
           Serial.println();
           EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
-          delay(1000);
           dht.begin();
-          delay(1000);
           logicSetup();             // set some pinmodes and begin serial comms
-          delay(1000);
           timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-          delay(1000);
           SDSetup();                // setup SD card, report if card is missing
-          delay(1000);
         }
          
          void loop() {
