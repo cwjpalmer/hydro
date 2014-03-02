@@ -33,8 +33,9 @@
 
 
     // LED Pins to represent control systems
-    #define LED_SOLENOID_PIN 22
-    #define LED_FAN_PIN 23
+    #define LED_SOLENOID_PIN 46
+    #define LED_FAN_PIN 47
+    #define LED_SERIAL_PIN 45
 
 
 
@@ -44,10 +45,9 @@
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int floatLowPin = A1;                      //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
-    int floatHighPin = A2;                     //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
+    int floatLowPin = 30;                      //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
+    int floatHighPin = 31;                     //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
     int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
-    int sdPin = 10;                            //pin for serial comms with SD card  // [  ] Adafruit uses 'echo data to serial'
     int solenoidPin = 49;                      //digital pin
     float h;                                   //humidity 
     float t;                                   //temperature
@@ -90,9 +90,8 @@
     /*LIQUID LEVEL VARIABLES*/
     float liqLevelsensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
     float liqLevelrefValue = 0;                         // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
-    float liqLevelcalEmptyValue = 0;                    // variable to store the raw value yielded by empty calibration 
-    float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
-    float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
+    float liqLevelcalFullValue = 900;                     // variable to store the raw value yielded by full calibration 
+    float liqLevelslope = 12;                            // variable to store the calculated value of the slope, for liq level calc
     float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
     float liqLevel =0;                                  
     int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
@@ -316,15 +315,15 @@
 
 
         void FanControl() {                                            // control the fan based on DHT sensor T and Humididity
-          if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - note not 100% sure the DHT[] values are T and H, but logicall they should be
+          //if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - note not 100% sure the DHT[] values are T and H, but logicall they should be
             // digitalWrite(ventilatorPin, HIGH);    // actual solenoid control
             digitalWrite(LED_FAN_PIN, HIGH);    // LED representation 
 
-          }
-          else {
+          //}
+          //else {
             // digitalWrite(ventilatorPin, LOW);    // actual solenoid control
-            digitalWrite(LED_FAN_PIN, LOW);    // LED representation
-          }
+         //   digitalWrite(LED_FAN_PIN, LOW);    // LED representation
+         // }
         }
 
                                                                        // [x] rewrite to use level sensor, instead of float switch as input
