@@ -31,6 +31,13 @@
     #define ECHO_TO_SERIAL   1                 // echo data to serial port
     #define WAIT_TO_START    0                 // Wait for serial input in setup()
 
+
+    // LED Pins to represent control systems
+    #define LED_SOLENOID_PIN 22
+    #define LED_FAN_PIN 23
+
+
+
     DHT dht(DHTPIN, DHTTYPE);
 
     int pHPin = A7;                            //pin for pH probe                   // [  ] analog Pin
@@ -117,6 +124,8 @@
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
+        pinMode(LED_SOLENOID_PIN , OUTPUT);
+        pinMode(LED_FAN_PIN , OUTPUT);
         //OneWire ds(liquidTemperaturePin); //LIQTfindMeTag
          
         pmem==0;
@@ -135,7 +144,7 @@
           float result = 0;
           result = liqLevelcalFullValue - liqLevelslope * liqLevelsensorValue;
           Serial.print("Liquid level = ");
-          Serial.print(result);
+          Serial.println(result);
           return result;
         }
 
@@ -313,22 +322,25 @@
 
         void FanControl() {                                            // control the fan based on DHT sensor T and Humididity
           if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - note not 100% sure the DHT[] values are T and H, but logicall they should be
-            digitalWrite(ventilatorPin, HIGH);
+            // digitalWrite(ventilatorPin, HIGH);    // actual solenoid control
+            digitalWrite(LED_FAN_PIN, HIGH);    // LED representation 
+
           }
           else {
-            digitalWrite(ventilatorPin, LOW);
+            // digitalWrite(ventilatorPin, LOW);    // actual solenoid control
+            digitalWrite(LED_FAN_PIN, LOW);    // LED representation
           }
         }
 
                                                                        // [x] rewrite to use level sensor, instead of float switch as input
         void TankProgControl () {
           if (getLiqLevel() < tankLowSetPoint) {
-            while (getLiqLevel() < tankHighSetPoint) {
-              digitalWrite(solenoidPin, HIGH);  //open solenoid valve
-            }
+              //digitalWrite(solenoidPin, HIGH);  //open solenoid valve
+            digitalWrite(LED_SOLENOID_PIN, HIGH);    // LED representation 
           }
           else {
-            digitalWrite(solenoidPin, LOW);     //close solenoid valve
+            //digitalWrite(solenoidPin, LOW);     //close solenoid valve
+            digitalWrite(LED_SOLENOID_PIN, LOW);    // LED representation             
           }
         }
 
@@ -452,6 +464,8 @@
 
             //return filename;
 
+           logfile.println("pH,temp,humidity,light,date");
+
         }
 
      
@@ -467,10 +481,10 @@
             now = RTC.now();
             dataFile.print(pH);
             dataFile.print(", ");
-            //dataFile.print(t, DEC);
-            //dataFile.print(", ");
-            //dataFile.print(h, DEC);
-            //dataFile.print(", ");
+            dataFile.print(t, DEC);
+            dataFile.print(", ");
+            dataFile.print(h, DEC);
+            dataFile.print(", ");
             dataFile.print(currentLightInLux);
           //dataFile.print(", ");                       //LIQTfindMeTag
           //dataFile.print(liquidTemperatureRead()); // [] FIND A WAY TO REMOVE THE REDUNDANCY: putting this function here means that we read liq T twice each loop: once from calling liqtread in void loop, and once from SDloop. LIQTfindMeTag
@@ -490,7 +504,7 @@
             dataFile.close();
           }
           else {
-            Serial.println("error opening DATALOG.CSV");
+            Serial.println("error opening CSV file");
           }
         }
 
@@ -544,8 +558,6 @@
         void setup() {
           Serial.begin(9600);
           Serial.println();
-          delay(1000);
-          Serial.println("System initializing");
           EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
           delay(1000);
           dht.begin();
@@ -562,7 +574,7 @@
            logicLoop();             // change control variables based on system state, serial print process variables
            fotoLoop();              // calculate and serial print light level
            FanControl();            // control fan from T and Humid
-           //TankProgControl();       // [] MUST REWRITE fill tank if below float level
+           TankProgControl();       // [] MUST REWRITE fill tank if below float level
            SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
            delay(3000);
