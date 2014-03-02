@@ -45,8 +45,8 @@ float liqLevelslope = 0;                            // variable to store the cal
 float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
 float liqLevel =0;                                  
 int liqLevelincomingByte = 0;                       // variable to store an incoming byte from serial communications  
-int liqLevelsensorPin = A4;                         // select the input pin for the potentiometer that responds to liquid level
-int liqLevelrefPin = A5;                            // signal pin for reference resistor
+int liqLevelsensorPin = A14;                         // select the input pin for the potentiometer that responds to liquid level
+int liqLevelrefPin = A15;                            // signal pin for reference resistor
 int ledPin = 13;                                    // select the pin for the LED
 int incomingByte = 0;
 
@@ -67,6 +67,7 @@ void loop()
   //  this block of code lights the LED, with duration & delay proportional sensor reading for visual feedback
   // omit for use in control system
   digitalWrite(ledPin, HIGH);               // turn the ledPin on
+  Serial.print("Sensor Value =  ");
   Serial.println(liqLevelsensorValue);              // stop the program for <sensorValue> milliseconds:
   delay(liqLevelsensorValue);                       // wait for an amount of time proportional to the sensor
   digitalWrite(ledPin, LOW);                // turn the ledPin off:       
@@ -87,12 +88,18 @@ void loop()
     case '3':    
       liqLevellinearFitSlope(liqLevelsensorValue, liqLevelcalFullValue);
       break;
+    case '4':
+      liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
+      Serial.print("Liquid Level Reading =  ");
+      Serial.println(liqLevelReading); 
+      delay(1000);  
     default:
       Serial.println('Invalid input. Enter 1 for empty calibration, 2 for full calibration, or 3 to calculate slope'); 
   }
 
-  liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
+  
   delay(1000);                              // wait 1 s
+
  }
 
 } 
@@ -101,7 +108,7 @@ void loop()
 // function to take a calibration value for the sensor when the liquid level is in air
 float liqLevelcalibrateEmpty  (float liqLevelsensorValue) 
 {
-  liqLevelcalEmptyValue = analogRead(liqLevelsensorValue);
+  liqLevelcalEmptyValue = analogRead(liqLevelsensorPin);
   Serial.print("Empty Calibration Value = ");
   Serial.println(liqLevelcalEmptyValue);
   return liqLevelcalEmptyValue;
@@ -110,7 +117,7 @@ float liqLevelcalibrateEmpty  (float liqLevelsensorValue)
 // function to take a calibration value for the sensor when it is at 100%
 float liqLevelcalibrateFull (float liqLevelsensorValue) 
 {
-  liqLevelcalFullValue = analogRead(liqLevelsensorValue);
+  liqLevelcalFullValue = analogRead(liqLevelsensorPin);
   Serial.print("Full Calibration Value = ");
   Serial.println(liqLevelcalFullValue);
   return liqLevelcalFullValue;
@@ -130,7 +137,7 @@ float liqLevellinearFitSlope (float liqLevelsensorValue, float liqLevelcalFullVa
 float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
 {
 	float result = 0;
-  result = liqLevelcalFullValue - liqLevelslope * liqLevelsensorValue;
+  result = liqLevelcalFullValue - (liqLevelslope * liqLevelsensorValue);
   Serial.print("Liquid level = ");
   Serial.print(result);
   return result;
