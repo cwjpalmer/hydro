@@ -1,8 +1,14 @@
+#include <Arduino.h>
+#include <OneWire.h>                       //OneWire library, for liquid temperature sensor
+#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
+void setup(void);
+void loop ();
+#line 1 "src/waterproof_temperature_sensor_via_dallas.ino"
 // this is not an arduino sketch, but rather code that can be included to add a function to a sketch
 // the function liquidTemperatureRead determines the temperature using a one-wire temperature sensor
 
-#include <OneWire.h>                       //OneWire library, for liquid temperature sensor
-#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
+//#include <OneWire.h>                       //OneWire library, for liquid temperature sensor
+//#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
 
 
 #define ONE_WIRE_BUS 28      // pin for temperature sensor
@@ -37,6 +43,7 @@ void loop () {
   sensors.requestTemperatures(); // Send the command to get temperatures
   delay(1000);
   Serial.println("DONE");
+  Serial.println(sensors);
   Serial.print("Liquid temperature is: ");
   temp = sensors.getTempCByIndex(0);
   Serial.println(temp);
