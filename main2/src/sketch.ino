@@ -23,19 +23,22 @@
 
 
 
-    #define DHTPIN 44                          //pin for DHT22                      // [  ] 1 digital input, 10KOhm resistor, 5V
+    #define DHTPIN 34                          //pin for DHT22                      // [  ] 1 digital input, 10KOhm resistor, 5V
     #define redLEDpin 2                        //LEDs on SD card
     #define greenLEDpin 3                      //LEDs on SD Card 
     #define DHTTYPE DHT22                      // DHT 22  (AM2302)
 
     #define ECHO_TO_SERIAL   1                 // echo data to serial port
     #define WAIT_TO_START    0                 // Wait for serial input in setup()
+    int DS18S20_Pin = 28; //DS18S20 Signal pin on digital 2
 
+    //Temperature chip i/o
+    OneWire ds(DS18S20_Pin);  // on digital pin 2
 
     // LED Pins to represent control systems
-    #define LED_SOLENOID_PIN 46
+    #define LED_SOLENOID_PIN 38
     #define LED_FAN_PIN 47
-    #define LED_SERIAL_PIN 45
+    #define LED_LIQ_PIN 40
 
 
 
@@ -68,12 +71,12 @@
     float pH;                          //generates the value of pH
 
     int pmem = 0;                      //check which page you're on
-    float Setpoint;                    //holds value for Setpoint
+    float Setpoint=4.8;                    //holds value for Setpoint
     float HysterisMin;                 
     float HysterisPlus;
     float SetHysteris;
     float FanTemp = 15;                   
-    float FanHumid = 98;                 
+    float FanHumid = 40;                 
     //float liquidTemperature;           // variable to hold temperature of liquid from waterproof thermometer LIQTfindMeTag
 
     int lightADCReading;
@@ -106,8 +109,8 @@
          
          // - DISABLE EEPROM WHEN NOT REQUIRED - specified life of 100k write/erase cycles
          void EepromRead() { // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
-          Setpoint = EEPROM.readFloat(EepromSetpoint);
-          SetHysteris = EEPROM.readFloat(EepromSetHysteris);
+          //Setpoint = EEPROM.readFloat(EepromSetpoint);
+          //SetHysteris = EEPROM.readFloat(EepromSetHysteris);
           //FanTemp = EEPROM.read(EepromFanTemp);
           //FanHumid = EEPROM.read(EepromFanHumid);
         }
@@ -118,8 +121,9 @@
         pinMode(pHMinPin, OUTPUT);
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
-        pinMode(LED_SOLENOID_PIN , OUTPUT);
-        pinMode(LED_FAN_PIN , OUTPUT);
+        pinMode(LED_SOLENOID_PIN, OUTPUT);
+        pinMode(LED_FAN_PIN, OUTPUT);
+        pinMode (LED_LIQ_PIN, OUTPUT);
         //OneWire ds(liquidTemperaturePin); //LIQTfindMeTag
          
         pmem==0;
@@ -159,6 +163,8 @@
         h = dht.readHumidity();
         t = dht.readTemperature();
 
+
+
         // check if returns are valid, if they are NaN (not a number) then something went wrong!
         if (isnan(t) || isnan(h)) {
           Serial.println("Failed to read from DHT");
@@ -193,22 +199,30 @@
           if (pH < HysterisMin && pmem == 0) {
             pmem == 1,
             digitalWrite (pHPlusPin, HIGH);
+            delay(300);                          // LED
+            digitalWrite (pHPlusPin, LOW);       // LED
             digitalWrite (pHMinPin, LOW);
           }
          
           if (pH >= HysterisMin && pH < Setpoint && pmem == 1) {
             digitalWrite (pHPlusPin, HIGH);
+            delay(300);                          // LED
+            digitalWrite (pHPlusPin, LOW);       // LED            
             digitalWrite (pHMinPin, LOW);
           }
          
           if (pH > HysterisPlus && pmem == 0) {
             pmem ==2,
             digitalWrite (pHMinPin, HIGH);
+            delay(300);                          // LED
+            digitalWrite (pHMinPin, LOW);        // LED            
             digitalWrite (pHPlusPin, LOW);
           }
          
           if (pH <= HysterisPlus && pH > Setpoint && pmem == 2) {
             digitalWrite (pHMinPin, HIGH);
+            delay(300);                          // LED
+            digitalWrite (pHMinPin, LOW);        // LED            
             digitalWrite (pHPlusPin, LOW);
           }
 
@@ -220,8 +234,11 @@
           Serial.println(SetHysteris);       
           Serial.print("pH = ");
           Serial.println(pH);
-          Serial.print("FanHumid = ");
-          Serial.println(FanHumid);
+
+          float liqTemperature = getTemp();
+          Serial.print("Liquid Temperature: ");
+          Serial.print(liqTemperature);
+          Serial.println(" °C");
                  
         }
                  
@@ -339,67 +356,57 @@
           }
         }
 
-        /*
-        int liquidTemperatureRead(){ // changed this function from void to int to allow us to return T reading LIQTfindMeTag
+        float getTemp(){
+          //returns the temperature from one DS18S20 in DEG Celsius
 
-          int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
-          byte i;
-          byte present = 0;
           byte data[12];
           byte addr[8];
 
-          if ( !ds.search(addr)) { 
+          if ( !ds.search(addr)) {
+              //no more sensors on chain, reset search
               ds.reset_search();
-              // return;            // COMMENTED OUT BECAUSE NOT RETURNING ANYTHING, AND WOULDN'T COMPILE WITH THIS LINE INCLUDED
+              return -1000;
+          }
+
+          if ( OneWire::crc8( addr, 7) != addr[7]) {
+              Serial.println("CRC is not valid!");
+              return -1000;
+          }
+
+          if ( addr[0] != 0x10 && addr[0] != 0x28) {
+              Serial.print("Device is not recognized");
+              return -1000;
           }
 
           ds.reset();
           ds.select(addr);
-          ds.write(0x44,1);         // start conversion, with parasite power on at the end
+          ds.write(0x44,1); // start conversion, with parasite power on at the end
 
-          delay(1000);     // maybe 750ms is enough, maybe not
-          // we might do a ds.depower() here, but the reset will take care of it.
-
-          present = ds.reset();
+          byte present = ds.reset();
           ds.select(addr);    
-          ds.write(0xBE);         // Read Scratchpad
+          ds.write(0xBE); // Read Scratchpad
 
-         
-          Serial.print(" Liquid T = ");
-          for ( i = 0; i < 9; i++) {           // we need 9 bytes
+          
+          for (int i = 0; i < 9; i++) { // we need 9 bytes
             data[i] = ds.read();
           }
           
-          LowByte = data[0];
-          HighByte = data[1];
-          TReading = (HighByte << 8) + LowByte;
-          SignBit = TReading & 0x8000;  // test most sig bit
-          if (SignBit) // negative
-          {
-            TReading = (TReading ^ 0xffff) + 1; // 2's comp
+          ds.reset_search();
+          
+          byte MSB = data[1];
+          byte LSB = data[0];
+
+          float tempRead = ((MSB << 8) | LSB); //using two's compliment
+          float TemperatureSum = tempRead / 16;
+          if (TemperatureSum > 35) {
+            digitalWrite (LED_LIQ_PIN, HIGH);
           }
-          Tc_100 = (6 * TReading) + TReading / 4;    // multiply by (100 * 0.0625) or 6.25
-
-          Whole = Tc_100 / 100;  // separate off the whole and fractional portions
-          Fract = Tc_100 % 100;
-
-
-          if (SignBit) // If its negative
-          {
-             Serial.print("-");
+          else {
+            digitalWrite (LED_LIQ_PIN, LOW);
           }
-          Serial.print(Whole);
-          Serial.print(".");
-          if (Fract < 10)
-          {
-             Serial.print("0");
-          }
-          Serial.print(Fract);
-          Serial.print("\n");
-
-          return Tc_100;
+          return TemperatureSum;
+          
         }
-        */
         
         void ManualRefilProg()                                        // adds liquid to tank from LCD command
         {
@@ -565,5 +572,5 @@
            TankProgControl();       // [] MUST REWRITE fill tank if below float level
            SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
-           delay(3000);
+           delay(1000);
          }
