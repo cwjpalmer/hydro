@@ -19,6 +19,7 @@
     #include <EEPROMex.h>                      //Extended Eeprom library
     #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
     #include "DHT.h"                           //DHT library for DHT22 sensor 
+    #include "SPI.h"
   //#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
 
 
@@ -32,14 +33,13 @@
     #define WAIT_TO_START    0                 // Wait for serial input in setup()
     int DS18S20_Pin = 28; //DS18S20 Signal pin on digital 2
 
-<<<<<<< HEAD
+
     //Temperature chip i/o
     OneWire ds(DS18S20_Pin);  // on digital pin 2
-=======
+
     // liquid level
     #define liqLevelRefResistor 2250           // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
     #define liqLevelSensorPin 48 
->>>>>>> addRefResistorLevelSensor
 
     // LED Pins to represent control systems
     #define LED_SOLENOID_PIN 38
