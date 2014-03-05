@@ -32,8 +32,14 @@
     #define WAIT_TO_START    0                 // Wait for serial input in setup()
     int DS18S20_Pin = 28; //DS18S20 Signal pin on digital 2
 
+<<<<<<< HEAD
     //Temperature chip i/o
     OneWire ds(DS18S20_Pin);  // on digital pin 2
+=======
+    // liquid level
+    #define liqLevelRefResistor 2250           // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
+    #define liqLevelSensorPin 48 
+>>>>>>> addRefResistorLevelSensor
 
     // LED Pins to represent control systems
     #define LED_SOLENOID_PIN 38
@@ -48,14 +54,15 @@
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int floatLowPin = 30;                      //pin for lower float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V 
-    int floatHighPin = 31;                     //pin for upper float sensor         // [  ] -> level sensor: 2 analog inputs, 10KOhm resistor, 5V
     int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int solenoidPin = 49;                      //digital pin
     float h;                                   //humidity 
     float t;                                   //temperature
   //int liquidTemperaturePin = 2;              //digital pin   LIQTfindMeTag
     char filename[] = "LOGGER00.CSV";          //filename for CSV file
+
+    int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
+    int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
 
 
     File logfile;                               //indicate CSV file exists 
@@ -89,19 +96,6 @@
     int EepromFanTemp = 40;       //location of FanTemp in Eeprom
     int EepromFanHumid = 60;      //location of FanHumid in Eeprom
 
-
-    /*LIQUID LEVEL VARIABLES*/
-    float liqLevelsensorValue = 0;                      // variable to store the value coming from the sensor // this was initially an int
-    float liqLevelrefValue = 0;                         // variable to store the value coming from the reference resistor // this was omitted as this code does not compensate for temperature
-    float liqLevelcalFullValue = 0;                     // variable to store the raw value yielded by full calibration 
-    float liqLevelslope = 0;                            // variable to store the calculated value of the slope, for liq level calc
-    float liqLevelReading = 0;                          // variable to store liquid level reading, as a percentage
-    float liqLevel =0;                                  
-    int liqLevelsensorPin = 14;                         // select the input pin for the potentiometer that responds to liquid level
-    int liqLevelrefPin = 15;                            // signal pin for reference resistor
-    int ledPin = 13;                                    // select the pin for the LED
-    int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
-    int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
 
 
     byte bGlobalErr;    //for passing error code back.
@@ -137,23 +131,21 @@
 
 
         // function to determine the liquid level from a sensor value; sensor value is input
-        float liqLevelCalc (float liqLevelsensorValue, float liqLevelcalFullValue, float liqLevelslope) 
-        {
-          float result = 0;
-          result = liqLevelcalFullValue - liqLevelslope * liqLevelsensorValue;
-          Serial.print("Liquid level = ");
-          Serial.println(result);
-          return result;
-        }
-
         int getLiqLevel() {
-
-          liqLevelsensorValue = analogRead(liqLevelsensorPin);      // read the value from the sensor
-          liqLevelrefValue = analogRead(liqLevelrefPin);            // read the value from the reference resistor
-          liqLevelReading = liqLevelCalc(liqLevelsensorValue, liqLevelcalFullValue, liqLevelslope);                // run liqLevelCalc() on delay input
-          return liqLevelReading;
-          }
+          float reading;
+ 
+          reading = analogRead(liqLevelSensorPin);
          
+          Serial.print("Analog reading "); 
+          Serial.println(reading);
+         
+          // convert the value to resistance
+          reading = (1023 / reading)  - 1;
+          reading = liqLevelRefResistor / reading;
+          Serial.print("Sensor resistance "); 
+          Serial.println(reading);
+          return reading;
+        }
 
 
         void logicLoop() { // 
