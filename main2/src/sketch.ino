@@ -50,11 +50,11 @@
 
     DHT dht(DHTPIN, DHTTYPE);
 
-    int pHPin = A7;                            //pin for pH probe                   // [  ] analog Pin
+    int pHPin = A1;                            //pin for pH probe                   // [  ] analog Pin
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
+    int lightSensor = A2;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int solenoidPin = 49;                      //digital pin
     float h;                                   //humidity 
     float t;                                   //temperature
