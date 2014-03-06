@@ -509,6 +509,7 @@
             }    
         }
 
+        /*
         void followSerialCommand() {
           if (Serial.available() > 0) {
             int incomingByte = Serial.read();
@@ -544,6 +545,30 @@
                   Serial.println('Invalid input. Enter 1-9');
                   break;   // else return error
               }
+          }
+        }
+        */
+        void followSerialCommand() {
+          byte index = 0;
+          char inData[10];
+          char inChar;
+
+          if (Serial.available() > 0) {
+            if(index < 9) { // One less than the size of the array
+              inChar = toUpperCase(Serial.read()); // Read a character
+              inData[index] = inChar; // Store it
+              index++; // Increment where to write next
+              inData[index] = '\0'; // Null terminate the string
+            }
+          }
+          if (inData[0] == 'P' && inData[1] == 'H') {
+            Serial.print('Enter desired pH setpoint')
+            if (Serial.available() > 0) {
+              setpoint=Serial.read();
+            }
+            else {
+              Serial.println('No setpoint given. Awaiting new serial command. Program will continue running.')
+            }
           }
         }
 
