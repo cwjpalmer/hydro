@@ -552,7 +552,7 @@
           byte index = 0;
           char inData[10];
           char inChar;
-
+          
           if (Serial.available() > 0) {
             if(index < 9) { // One less than the size of the array
               inChar = toUpperCase(Serial.read()); // Read a character
@@ -561,15 +561,23 @@
               inData[index] = '\0'; // Null terminate the string
             }
           }
-          if (inData[0] == 'P' && inData[1] == 'H') {
-            Serial.print('Enter desired pH setpoint')
+
+          Serial.print('inData is: ');
+          Serial.println(inData);
+          /*
+          if (strcmp('pH',inData) {
+            Serial.println('Enter desired pH setpoint');
+
+            delay(1000);
+
             if (Serial.available() > 0) {
-              setpoint=Serial.read();
+              Setpoint = Serial.read();
             }
             else {
-              Serial.println('No setpoint given. Awaiting new serial command. Program will continue running.')
+              Serial.println('No setpoint given. Awaiting new serial command. Program will continue running.');
             }
           }
+          */
         }
 
         void setup() {
