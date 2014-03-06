@@ -550,11 +550,11 @@
         void setup() {
           Serial.begin(9600);
           Serial.println();
-          EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
+          //EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
           dht.begin();
           logicSetup();             // set some pinmodes and begin serial comms
           timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-          SDSetup();                // setup SD card, report if card is missing
+          //SDSetup();                // setup SD card, report if card is missing
         }
          
          void loop() {
@@ -562,7 +562,7 @@
            fotoLoop();              // calculate and serial print light level
            FanControl();            // control fan from T and Humid
            TankProgControl();       // [] MUST REWRITE fill tank if below float level
-           SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
+           //SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
            delay(1000);
          }
