@@ -50,11 +50,11 @@
 
     DHT dht(DHTPIN, DHTTYPE);
 
-    int pHPin = A7;                            //pin for pH probe                   // [  ] analog Pin
+    int pHPin = A1;                            //pin for pH probe                   // [  ] analog Pin
     int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
     int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
     int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
+    int lightSensor = A2;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
     int solenoidPin = 49;                      //digital pin
     float h;                                   //humidity 
     float t;                                   //temperature
@@ -513,10 +513,10 @@
           if (Serial.available() > 0) {
             int incomingByte = Serial.read();
               switch (incomingByte) {
-                case '1':    
+                case 'i':    
                   phIncreaseSetpoint();                         // pH inc set point
                   break;
-                case '2':    
+                case 'down':    
                   phDecreaseSetpoint();                         // pH dec set point
                   break;
                 case '3':    
@@ -550,11 +550,11 @@
         void setup() {
           Serial.begin(9600);
           Serial.println();
-          EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
+          //EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
           dht.begin();
           logicSetup();             // set some pinmodes and begin serial comms
           timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-          SDSetup();                // setup SD card, report if card is missing
+          //SDSetup();                // setup SD card, report if card is missing
         }
          
          void loop() {
@@ -562,7 +562,7 @@
            fotoLoop();              // calculate and serial print light level
            FanControl();            // control fan from T and Humid
            TankProgControl();       // [] MUST REWRITE fill tank if below float level
-           SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
+           //SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
            delay(1000);
          }
