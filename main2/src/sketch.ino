@@ -1,54 +1,47 @@
 
-    /*
-    **************Billie's Hydroponic Controller V1.0.1***************
-    **************-------------------------------------***************
-    ****Made by Tom De Bie for anyone who can find a use for it ;)****
-    ******************************************************************
-    ******************************************************************
-  
-    */
+  /*
+  **************Billie's Hydroponic Controller V1.0.1***************
+  **************-------------------------------------***************
+  ****Made by Tom De Bie for anyone who can find a use for it ;)****
+  ******************************************************************
+  ******************************************************************
 
-    #include <SD.h>                            //SD card library
-    #include <Wire.h>                          //One Wire library
-    #include "RTClib.h"                        //Real Time Clock library
-    #include <EEPROMex.h>                      //Extended Eeprom library
-    #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
-    #include "DHT.h"                           //DHT library for DHT22 sensor 
-    #include "SPI.h"
-  
+  */
 
+  // Libraries 
+  #include <SD.h>                            //SD card library
+  #include <Wire.h>                          //One Wire library
+  #include "RTClib.h"                        //Real Time Clock library
+  #include <EEPROMex.h>                      //Extended Eeprom library
+  #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
+  #include "DHT.h"                           //DHT library for DHT22 sensor 
+  #include "SPI.h"
 
+  // Definitions & Pins
+  #define DHTPIN 34                          //pin for DHT22                     
+  #define redLEDpin 2                        //LEDs on SD card
+  #define greenLEDpin 3                      //LEDs on SD Card 
+  #define DHTTYPE DHT22                      //DHT 22  (AM2302)
+  #define DS18S20_Pin 28                      //DS18S20 Signal pin on digital 2
+  #define pHPin A7                           //pin for pH probe          
+  #define pHPlusPin  45                        //pin for Base pump (relay)         
+  #define pHMinPin  46                         //pin for Acide pump (relay)        
+  #define lightSensor  A8                      //pin for Photoresistor             
+  #define solenoidPin  49                      //digital pin
+  #define LED_SOLENOID_PIN 38                //LED
+  #define LED_LIQ_PIN 40                     //LED
+  #define liqLevelRefResistor 2250           //liquid level[] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
+  #define liqLevelSensorPin A10              //liquid level
 
-    #define DHTPIN 34                          //pin for DHT22                     
-    #define redLEDpin 2                        //LEDs on SD card
-    #define greenLEDpin 3                      //LEDs on SD Card 
-    #define DHTTYPE DHT22                      // DHT 22  (AM2302)
+  OneWire ds(DS18S20_Pin);  //Temperature chip i/o
 
-    #define ECHO_TO_SERIAL   1                 // echo data to serial port
-    #define WAIT_TO_START    0                 // Wait for serial input in setup()
-    int DS18S20_Pin = 28; //DS18S20 Signal pin on digital 2
-
-
-    //Temperature chip i/o
-    OneWire ds(DS18S20_Pin);  // on digital pin 2
-
-    // liquid level
-    #define liqLevelRefResistor 2250           // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
-    #define liqLevelSensorPin A10 
-
-    // LED Pins to represent control systems
-    #define LED_SOLENOID_PIN 38
-    #define LED_LIQ_PIN 40
+    
 
 
 
     DHT dht(DHTPIN, DHTTYPE);
 
-    int pHPin = A7;                            //pin for pH probe                  
-    int pHPlusPin = 45;                        //pin for Base pump (relay)         
-    int pHMinPin = 46;                         //pin for Acide pump (relay)        
-    int lightSensor = A8;                      //pin for Photoresistor             
-    int solenoidPin = 49;                      //digital pin
+
     float h;                                   //humidity 
     float t;                                   //temperature
   //int liquidTemperaturePin = 2;              //digital pin   LIQTfindMeTag
@@ -94,21 +87,21 @@
         }
 
 
-        void logicSetup() {
-        pinMode(pHPlusPin, OUTPUT);
-        pinMode(pHMinPin, OUTPUT);
-        pinMode(solenoidPin, OUTPUT);
-        pinMode(LED_SOLENOID_PIN, OUTPUT);
-        pinMode (LED_LIQ_PIN, OUTPUT);
-         
-        pmem==0;
-         
-        delay(300);
-        Serial.println("System Booting!");
-        Serial.println("__________________________________\n\n");
-        delay(700);
-        }
+        void logicSetup() {        
 
+          pinMode(pHPlusPin, OUTPUT);
+          pinMode(pHMinPin, OUTPUT);
+          pinMode(solenoidPin, OUTPUT);
+          pinMode(LED_SOLENOID_PIN, OUTPUT);
+          pinMode (LED_LIQ_PIN, OUTPUT);
+         
+          pmem==0;
+           
+          delay(300);
+          Serial.println("System Booting!");
+          Serial.println("__________________________________\n\n");
+          delay(700);
+        }
 
 
         // function to determine the liquid level from a sensor value; sensor value is input
