@@ -97,7 +97,6 @@
         void logicSetup() {
         pinMode(pHPlusPin, OUTPUT);
         pinMode(pHMinPin, OUTPUT);
-        pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
         pinMode(LED_SOLENOID_PIN, OUTPUT);
         pinMode (LED_LIQ_PIN, OUTPUT);
