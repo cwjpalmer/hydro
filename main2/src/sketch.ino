@@ -39,7 +39,7 @@
 
     // liquid level
     #define liqLevelRefResistor 2250           // [] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here    
-    #define liqLevelSensorPin 48 
+    #define liqLevelSensorPin A10 
 
     // LED Pins to represent control systems
     #define LED_SOLENOID_PIN 38
@@ -61,7 +61,7 @@
   //int liquidTemperaturePin = 2;              //digital pin   LIQTfindMeTag
     char filename[] = "LOGGER00.CSV";          //filename for CSV file
 
-    int tankLowSetPoint = 20;                           // variable to store lower limit of tank level   // as a %
+    int tankLowSetPoint = 850;                           // variable to store lower limit of tank level   // as a %
     int tankHighSetPoint = 80;                          // variable to store upper limit of tank level   // as a %
 
 
@@ -95,7 +95,7 @@
     int EepromSetHysteris = 20;   //location of SetHysteris in Eeprom
     int EepromFanTemp = 40;       //location of FanTemp in Eeprom
     int EepromFanHumid = 60;      //location of FanHumid in Eeprom
-
+    float liqTemperatureOutput;
 
 
     byte bGlobalErr;    //for passing error code back.
@@ -136,14 +136,12 @@
  
           reading = analogRead(liqLevelSensorPin);
          
-          Serial.print("Analog reading "); 
-          Serial.println(reading);
-         
           // convert the value to resistance
           reading = (1023 / reading)  - 1;
           reading = liqLevelRefResistor / reading;
           Serial.print("Sensor resistance "); 
           Serial.println(reading);
+
           return reading;
         }
 
@@ -257,7 +255,7 @@
 
 
         void phIncreaseSetpoint() {
-          Setpoint = Setpoint + 0.01;
+          Setpoint = Setpoint + 0.10;
           if (Setpoint >= 9.00) {
             Setpoint = 9.00;
           }
@@ -265,7 +263,7 @@
         }
 
         void phDecreaseSetpoint() {
-          Setpoint = Setpoint - 0.01;
+          Setpoint = Setpoint - 0.10;
           if (Setpoint <= 3.00) {
             Setpoint = 3.00;
           }
@@ -340,11 +338,11 @@
         void TankProgControl () {
           if (getLiqLevel() < tankLowSetPoint) {
               //digitalWrite(solenoidPin, HIGH);  //open solenoid valve
-            digitalWrite(LED_SOLENOID_PIN, HIGH);    // LED representation 
+            digitalWrite(LED_SOLENOID_PIN, LOW);    // LED representation 
           }
           else {
             //digitalWrite(solenoidPin, LOW);     //close solenoid valve
-            digitalWrite(LED_SOLENOID_PIN, LOW);    // LED representation             
+            digitalWrite(LED_SOLENOID_PIN, HIGH);    // LED representation             
           }
         }
 
@@ -396,6 +394,7 @@
           else {
             digitalWrite (LED_LIQ_PIN, LOW);
           }
+          liqTemperatureOutput = TemperatureSum; 
           return TemperatureSum;
           
         }
@@ -479,19 +478,9 @@
             dataFile.print(", ");
             dataFile.print(currentLightInLux);
           //dataFile.print(", ");                       //LIQTfindMeTag
-          //dataFile.print(liquidTemperatureRead()); // [] FIND A WAY TO REMOVE THE REDUNDANCY: putting this function here means that we read liq T twice each loop: once from calling liqtread in void loop, and once from SDloop. LIQTfindMeTag
+          //dataFile.print(liquidTemperatureRead()); // 
             dataFile.print(", ");
-            dataFile.print(now.day(), DEC);   
-            dataFile.print('/');
-            dataFile.print(now.month(), DEC);
-            dataFile.print('/');
-            dataFile.print(now.year(), DEC);
-            dataFile.print(' ');
-            dataFile.print(now.hour(), DEC);
-            dataFile.print(':');
-            dataFile.print(now.minute(), DEC);
-            dataFile.print(':');
-            dataFile.print(now.second(), DEC);
+            dataFile.print(liqTemperatureOutput);
             dataFile.println();
             dataFile.close();
           }
