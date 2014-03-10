@@ -1,8 +1,3 @@
-  /* 
-  THIS VERSION IS MODIFIED FROM THE ORIGINAL VERSION
-  ALL CODE PERTAINING TO THE LCD SCREEN IS BEING COMMENTED OUT
-  ALL OTHER CODE IS BEING ANNOTATED TO FACILITATE A STRONGER UNDERSTANDING OF THE FUNCTIONALITY OF THE CODE
-  */
 
     /*
     **************Billie's Hydroponic Controller V1.0.1***************
@@ -20,11 +15,11 @@
     #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
     #include "DHT.h"                           //DHT library for DHT22 sensor 
     #include "SPI.h"
-  //#include <DallasTemperature.h>             //Library for Dallas Temperature that may or may not be required for liquid temperature sensor 
+  
 
 
 
-    #define DHTPIN 34                          //pin for DHT22                      // [  ] 1 digital input, 10KOhm resistor, 5V
+    #define DHTPIN 34                          //pin for DHT22                     
     #define redLEDpin 2                        //LEDs on SD card
     #define greenLEDpin 3                      //LEDs on SD Card 
     #define DHTTYPE DHT22                      // DHT 22  (AM2302)
@@ -43,18 +38,16 @@
 
     // LED Pins to represent control systems
     #define LED_SOLENOID_PIN 38
-    #define LED_FAN_PIN 47
     #define LED_LIQ_PIN 40
 
 
 
     DHT dht(DHTPIN, DHTTYPE);
 
-    int pHPin = A7;                            //pin for pH probe                   // [  ] analog Pin
-    int pHPlusPin = 45;                        //pin for Base pump (relay)          // [  ] digital Pin
-    int pHMinPin = 46;                         //pin for Acide pump (relay)         // [  ] digital Pin
-    int ventilatorPin = 47;                    //pin for Fan (relay)                // [  ] digital Pin
-    int lightSensor = A8;                      //pin for Photoresistor              // [  ]   1 analog input, 10kOhm resistor, 5V
+    int pHPin = A7;                            //pin for pH probe                  
+    int pHPlusPin = 45;                        //pin for Base pump (relay)         
+    int pHMinPin = 46;                         //pin for Acide pump (relay)        
+    int lightSensor = A8;                      //pin for Photoresistor             
     int solenoidPin = 49;                      //digital pin
     float h;                                   //humidity 
     float t;                                   //temperature
@@ -68,9 +61,7 @@
     File logfile;                               //indicate CSV file exists 
     RTC_DS1307 RTC;                            //Define RTC module
 
-    //****************************************************************//
-    //*********Declaring Variables************************************//
-    //****************************************************************//
+  
     int x, y;
     int page = 0;
     int tankProgState = 0;
@@ -82,9 +73,6 @@
     float HysterisMin;                 
     float HysterisPlus;
     float SetHysteris;
-    float FanTemp = 15;                   
-    float FanHumid = 40;                 
-    //float liquidTemperature;           // variable to hold temperature of liquid from waterproof thermometer LIQTfindMeTag
 
     int lightADCReading;
     double currentLightInLux;
@@ -93,8 +81,6 @@
 
     int EepromSetpoint = 10;      //location of Setpoint in Eeprom
     int EepromSetHysteris = 20;   //location of SetHysteris in Eeprom
-    int EepromFanTemp = 40;       //location of FanTemp in Eeprom
-    int EepromFanHumid = 60;      //location of FanHumid in Eeprom
     float liqTemperatureOutput;
 
 
@@ -105,8 +91,6 @@
          void EepromRead() { // memory whose values are kept when board loses power  - specified life of 100k write/erase cycles
           //Setpoint = EEPROM.readFloat(EepromSetpoint);
           //SetHysteris = EEPROM.readFloat(EepromSetHysteris);
-          //FanTemp = EEPROM.read(EepromFanTemp);
-          //FanHumid = EEPROM.read(EepromFanHumid);
         }
 
 
@@ -116,9 +100,7 @@
         pinMode(ventilatorPin, OUTPUT);
         pinMode(solenoidPin, OUTPUT);
         pinMode(LED_SOLENOID_PIN, OUTPUT);
-        pinMode(LED_FAN_PIN, OUTPUT);
         pinMode (LED_LIQ_PIN, OUTPUT);
-        //OneWire ds(liquidTemperaturePin); //LIQTfindMeTag
          
         pmem==0;
          
@@ -146,10 +128,8 @@
         }
 
 
-        void logicLoop() { // 
+        void logicLoop() { 
 
-        // Reading temperature or humidity takes about 250 milliseconds!
-        // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
         h = dht.readHumidity();
         t = dht.readTemperature();
 
@@ -286,55 +266,7 @@
           
         }
 
-        void FanIncreaseTemp() {
-          FanTemp = FanTemp + 1;
-          if (FanTemp >= 50) {
-            FanTemp = 50;
-          }
-         
-        }
 
-
-        void FanDecreaseTemp() {
-          FanTemp = FanTemp - 1;
-          if (FanTemp <= 0) {
-            FanTemp = 0;
-          }
-          
-        }
-
-
-        void FanIncreaseHumid() {
-          FanHumid = FanHumid + 1;
-          if (FanHumid >= 100) {
-            FanHumid = 100;
-          }
-     
-        }
-
-
-        void FanDecreaseHumid() {
-          FanHumid = FanHumid - 1;
-          if (FanHumid <= 0) {
-            FanHumid = 0;
-          }
-        
-        }
-
-
-        void FanControl() {                                            // control the fan based on DHT sensor T and Humididity
-          if ((h >= FanHumid) && (t >= FanTemp)) {   // if himidity is too high and temp us too high, turn fan on - 
-            //digitalWrite(ventilatorPin, HIGH);    // actual solenoid control
-            digitalWrite(LED_FAN_PIN, HIGH);    // LED representation 
-
-          }
-          else {
-            // digitalWrite(ventilatorPin, LOW);    // actual solenoid control
-           digitalWrite(LED_FAN_PIN, LOW);    // LED representation
-         }
-        }
-
-                                                                       // [x] rewrite to use level sensor, instead of float switch as input
         void TankProgControl () {
           if (getLiqLevel() < tankLowSetPoint) {
               //digitalWrite(solenoidPin, HIGH);  //open solenoid valve
@@ -477,8 +409,6 @@
             dataFile.print(h, DEC);
             dataFile.print(", ");
             dataFile.print(currentLightInLux);
-          //dataFile.print(", ");                       //LIQTfindMeTag
-          //dataFile.print(liquidTemperatureRead()); // 
             dataFile.print(", ");
             dataFile.print(liqTemperatureOutput);
             dataFile.println();
@@ -514,21 +444,6 @@
                 case '4':    
                   phDecreaseHysteris();                         // pH dec hysteris
                   break;
-                case '5':    
-                  FanIncreaseTemp();                            // fan inc temp
-                  break;
-                case '6':    
-                  FanDecreaseTemp();                            // fan dec temp
-                  break;
-                case '7':    
-                  FanIncreaseHumid();                           // fan inc humid
-                  break;
-                case '8':    
-                  FanDecreaseHumid();                           // fan dec humid
-                  break;
-                case '9':
-                  ManualRefilProg();                            // manual order to fill the tank
-                  break;
                 default:
                   Serial.println('Invalid input. Enter 1-9');
                   break;   // else return error
@@ -539,7 +454,7 @@
         void setup() {
           Serial.begin(9600);
           Serial.println();
-          EepromRead();             // pull values for Setpoint, SetHysteris, FanTemp, FanHumid from eeprom
+          EepromRead();             // pull values for Setpoint, SetHysteris, from eeprom
           dht.begin();
           logicSetup();             // set some pinmodes and begin serial comms
           timeSetup();              // start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
@@ -549,7 +464,6 @@
          void loop() {
            logicLoop();             // change control variables based on system state, serial print process variables
            fotoLoop();              // calculate and serial print light level
-           FanControl();            // control fan from T and Humid
            TankProgControl();       // [] MUST REWRITE fill tank if below float level
            SDLoop();                // log {pH, T, Humid, light, date, time} to SD card   [] ADD LIQUID TEMPERATURE
            followSerialCommand();   // respond to serial input 
