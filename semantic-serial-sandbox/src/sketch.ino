@@ -48,6 +48,13 @@ void loop () {
 			}
 			else if (strcmp(c2,"increase") == 0) {
 				Serial.println("command ph increase recognized");
+				if (c3) {
+					//Serial.println("c3 is present");
+					ph = ph + atof(c3);
+				}
+				else {
+					ph = ph + 0.1;
+				}
 			}
 			else if (strcmp(c2,"decrease") == 0) {
 				Serial.println("command ph decrease recognized");
