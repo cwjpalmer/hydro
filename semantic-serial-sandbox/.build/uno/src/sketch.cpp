@@ -1,3 +1,8 @@
+#include <Arduino.h>
+
+void setup();
+void loop ();
+#line 1 "src/sketch.ino"
 String commandIn;
 
 char command[20];
