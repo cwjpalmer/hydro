@@ -78,7 +78,7 @@
     float pH;                          //generates the value of pH
 
     int pmem = 0;                      //check which page you're on
-    float Setpoint=4.8;                    //holds value for Setpoint
+    float Setpoint=4.0;                    //holds value for Setpoint
     float HysterisMin;                 
     float HysterisPlus;
     float SetHysteris;
