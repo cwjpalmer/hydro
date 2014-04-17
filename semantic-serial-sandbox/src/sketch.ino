@@ -30,12 +30,12 @@ void loop () {
 		c1 = strtok(command," ");
 		c2 = strtok(NULL," ");
 		c3 = strtok(NULL," ");
-		Serial.print("c1 is: ");
-		Serial.println(c1);
-		Serial.print("c2 is: ");
-		Serial.println(c2);
-		Serial.print("c3 is: ");
-		Serial.println(c3);
+		// Serial.print("c1 is: ");
+		// Serial.println(c1);
+		// Serial.print("c2 is: ");
+		// Serial.println(c2);
+		// Serial.print("c3 is: ");
+		// Serial.println(c3);
 
 		// make the character array lowercase
 		String c1string = String(c1); 					// make a String from the character array c1
@@ -89,5 +89,7 @@ void loop () {
 	else {
 		Serial.println("No command registered");
 	}
+
+	ph = ph;
 	
 }
