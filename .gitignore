@@ -1,0 +1,4 @@
+# this file tells git what file names to ignore when committing.
+
+# this way we never push .build files to git
+.build
