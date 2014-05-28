@@ -222,51 +222,39 @@
     pH = (0.0178 * pHSensorValue - 1.889);
     */
 
-    pH = 4.81;  // CP KILL THIS - its BS BS BS
+    pH = 6;  // CP KILL THIS - its BS BS BS
 
     HysterisMin = (Setpoint - SetHysteris);
     HysterisPlus = (Setpoint + SetHysteris);
 
     // - SERIES OF IF STATEMENTS TO CHANGE CONTROL VARIABLES BASED ON SYSTEM STATE -
-    if (pH == Setpoint) {
-      /*pmem == 0, // why is this a logical operator?*/
-      digitalWrite (pHMinPin, LOW);
-      digitalWrite (pHPlusPin, LOW);
-    }
-
-    if (pH >= HysterisMin && pH <= HysterisPlus/* && pmem == 0*/) {
-      digitalWrite (pHMinPin, LOW);
-      digitalWrite (pHPlusPin, LOW);
-    }
-
-    if (pH < HysterisMin/* && pmem == 0*/) {
-      /*pmem == 1,*/
-      digitalWrite (pHPlusPin, HIGH);
-      delay(300);                          // LED
-      digitalWrite (pHPlusPin, LOW);       // LED
-      digitalWrite (pHMinPin, LOW);
-    }
-
-    if (pH >= HysterisMin && pH < Setpoint /*&& pmem == 1*/) {
-      digitalWrite (pHPlusPin, HIGH);
-      delay(300);                          // LED
-      digitalWrite (pHPlusPin, LOW);       // LED
-      digitalWrite (pHMinPin, LOW);
-    }
-
-    if (pH > HysterisPlus/* && pmem == 0*/) {
-      /*pmem ==2,*/
-      digitalWrite (pHMinPin, HIGH);
-      delay(300);                          // LED
-      digitalWrite (pHMinPin, LOW);        // LED
-      digitalWrite (pHPlusPin, LOW);
-    }
-
-    if (pH <= HysterisPlus && pH > Setpoint/* && pmem == 2*/) {
-      digitalWrite (pHMinPin, HIGH);
-      delay(300);                          // LED
-      digitalWrite (pHMinPin, LOW);        // LED
-      digitalWrite (pHPlusPin, LOW);
+    if (pH >= HysterisMin && pH <= HysterisPlus) {
+      // pH is above lower limit and below upper limit
+      // add nothing
+      digitalWrite(pHMinPin,LOW);
+      digitalWrite(pHPlusPin,LOW);
+      Serial.println("pH in acceptable range");
+    } else if (pH < HysterisMin ) {
+      // make sure pH down solution not being added
+      digitalWrite(pHMinPin,LOW);
+      // add a dose of pH plus soution
+      digitalWrite(pHPlusPin,HIGH);
+      delay(300);
+      digitalWrite(pHPlusPin,LOW);
+      Serial.println("pH too low. Adjusting ...");
+    } else if (pH > HysterisPlus) {
+      // make sure pH up solution not being added
+      digitalWrite(pHPlusPin,LOW);
+      // add a dose of pH down solution
+      digitalWrite(pHMinPin,HIGH);
+      delay(300);
+      digitalWrite(pHMinPin,LOW);
+      Serial.println("pH too high. Adjusting ...");
+    } else {
+      // feedback saying pH is fucked
+      digitalWrite(pHMinPin,LOW);
+      digitalWrite(pHPlusPin,LOW);
+      Serial.println("Unexpected pH reading. Check pH sensor, verify reading. If this message persists, monitor & control pH manually using handheld sensor & pH up & pH down solutions.");
     }
 
     Serial.print("pH Setpoint = ");
@@ -276,9 +264,8 @@
     Serial.print("pH = ");
     Serial.println(pH);
 
-    float liqTemperature = getTemp();
     Serial.print("Liquid Temperature: ");
-    Serial.print(liqTemperature);
+    Serial.print(getTemp());
     Serial.println(" °C");
 
   }
