@@ -118,7 +118,7 @@
 
   }
 
-/*                      // commented out for testing without SD card reader
+                      // commented out for testing without SD card reader
   void SDSetup() {
     // initialize the SD card
     Serial.print("Initializing SD card...");
@@ -149,7 +149,7 @@
      File dataFile = SD.open(filename, FILE_WRITE);
      dataFile.print("pH,temp,humidity,light,date");
   }
-*/
+
 
 /*
   ***** LIQUID LEVEL FUNCTION BLOCK *****
@@ -216,13 +216,11 @@
     Serial.print(t);
     Serial.println(" °C");
     }
-    /*                        [ ] CP CHANGE BACK
+
     float pHSensorValue = 0;
     pHSensorValue = analogRead(pHPin);
     pH = (0.0178 * pHSensorValue - 1.889);
-    */
 
-    pH = 6;  // CP KILL THIS - its BS BS BS
 
     HysteresisMin = (pHSetpoint - SetHysteresis);
     HysteresisPlus = (pHSetpoint + SetHysteresis);
@@ -450,7 +448,16 @@
   }
 
 
-  // Serial Commands
+/*
+  ***** SEMANTIC SERIAL COMMAND BLOCK *****
+      *  only one function
+      *  takes string input from serial comms
+      *  parses command
+      *  modifies system variables based on command
+      todos
+      [] move 'help' to its own function
+      [] move generic error message to its own function
+*/
   void followSerialCommand() {
     // receive a command as a character array (not a String object)
     String command;
@@ -549,7 +556,7 @@
     dht.begin();              //
     logicSetup();             //  set some pinmodes and begin serial comms
     timeSetup();              //  start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-    //SDSetup();                //  setup SD card, report if card is missing
+    SDSetup();                //  setup SD card, report if card is missing
     TankShouldFillSetup();
   }
 
@@ -557,7 +564,7 @@
      logicLoop();             //  change control variables based on system state, serial print process variables
      lightLoop();             //  calculate and serial print light level
      TankLevelControlLoop();       //  f
-     //SDLoop();                //  f
+     SDLoop();                //  f
      followSerialCommand();   // respond to serial input
      Serial.println();
      delay(4000);
