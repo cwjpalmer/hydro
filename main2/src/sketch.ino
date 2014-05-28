@@ -286,10 +286,18 @@
 
 
   //  pH & Hysteresis Controls
-  void phIncreaseSetpoint() {
-    pHSetpoint = pHSetpoint + 0.10;
-    if (pHSetpoint >= 9.00) {
-      pHSetpoint = 9.00;
+  void phIncreaseSetpoint(float amount) {
+    if (amount) {
+      pHSetpoint = pHSetpoint + 0.10;
+      if (pHSetpoint >= 9.00) {
+        pHSetpoint = 9.00;
+      }
+    }
+    else {
+      pHSetpoint = pHSetpoint + amount;
+      if (pHSetpoint >= 9.00) {
+        pHSetpoint = 9.00;
+      }
     }
   }
   void phDecreaseSetpoint() {
@@ -442,20 +450,95 @@
   }
 
 
-  // Serial Commands; to be Replaced
+  // Serial Commands
   void followSerialCommand() {
-    if (Serial.available() > 0) {
-      int incomingByte = Serial.read();
-        switch (incomingByte) {
-          case '1':
-            phIncreaseSetpoint();                         // pH inc set point
-            break;
-          case '2':
-            phDecreaseSetpoint();                         // pH dec set point
-            break;
-          default:
-            Serial.println('Invalid input. Enter 1-9');
-            break;
+    // receive a command as a character array (not a String object)
+    String command;
+
+    if (Serial.available()) {
+      command = Serial.readString();
+
+      char commandForParsing[32];
+      command.toCharArray(commandForParsing,32);
+
+      // parse the command into pieces using strtok (read: string token)
+      char *i;
+
+      char* goal = strtok_r(commandForParsing," ",&i);
+      char* variable = strtok_r(NULL," ",&i);
+      char* value = strtok_r(NULL," ",&i);
+      float floatValue = atof(value);
+
+
+      // interpret the pieces of the command using strcmp (read: string compare)
+        if (String(goal).equalsIgnoreCase("help")) {
+          // display a walkthrough on giving commands
+          Serial.println("So, you need help, eh?");
+          Serial.println("Here's some info on giving commands to the arduino over serial communications (that's what you're doing now).");
+          Serial.println();
+          Serial.println("Enter a goal, variable and a value, all separated by spaces. Then hit enter. Note: this interface is not case sensitive.");
+          Serial.println();
+            Serial.println("Possible goals are:");
+              Serial.println("     help");
+              Serial.println("     set");
+              Serial.println("     inc");
+              Serial.println("     increase");
+              Serial.println("     dec");
+              Serial.println("     decrease");
+              Serial.println();
+            Serial.println("Possible variables are:");
+              Serial.println("     phSet     (the setpoint for pH)");
+              Serial.println("     phHysteresis     (this is the 'plus or minus' value for the pH setpoint)");
+              Serial.println();
+            Serial.println("Values are decimal values, such as 4.81 or 5");
+            Serial.println("Here are some example commands");
+            Serial.println();
+              Serial.println("set phset 5.61     (changes the pH set point to 5.61)");
+              Serial.println("INC PHhysteresis 0.15     (increases the hysteresis on pH by 0.15)");
+              Serial.println("dec phset     (this will decrease the ph setpoint by the default value, 0.1)");
+              Serial.println();
+            Serial.println();
+            Serial.println("That's all the help I have built in. For more detailed info, check out the source code or get in touch with the coders.");
+        } else if (String(goal).equalsIgnoreCase("set")) {  // if the goal is set
+          if (floatValue==0) {  // check to make sure that the value supplied is a number
+            Serial.println("Value given was not a number. Check command & try again. Give command 'help' for more info.");
+          } else {  // if value is a number:
+              // set hysteresis value
+              if (String(variable).equalsIgnoreCase("phHysteresis")) {
+                SetHysteresis = floatValue;
+              // set ph set value
+              } else if (String(variable).equalsIgnoreCase("phSet")) {
+                pHSetpoint = floatValue;
+              } else {
+                Serial.print("Command not recognized. Check command & try again. Give command 'help' for more info.");
+              }
+          }
+        } else if (String(goal).equalsIgnoreCase("inc")) {  // if the goal is increase
+            if (String(variable).equalsIgnoreCase("phHysteresis")) {
+              phIncreaseHysteresis();
+            } else if (String(variable).equalsIgnoreCase("phSet")) {
+              phIncreaseSetpoint(floatValue);
+            } else {
+              Serial.print("Command not recognized. Check command & try again. Give command 'help' for more info.");
+            }
+        } else if (String(goal).equalsIgnoreCase("increase")) {  // if the goal is increase
+            if (String(variable).equalsIgnoreCase("phHysteresis")) {
+              phIncreaseHysteresis();
+            } else if (String(variable).equalsIgnoreCase("phSet")) {
+              phIncreaseSetpoint(floatValue);
+            } else {
+              Serial.print("Command not recognized. Check command & try again. Give command 'help' for more info.");
+            }
+        } else if (String(goal).equalsIgnoreCase("dec") || String(goal).equalsIgnoreCase("decrease")){  // if the goal is decrease
+            if (String(variable).equalsIgnoreCase("phHysteresis")) {
+              phDecreaseHysteresis();
+            } else if (String(variable).equalsIgnoreCase("phSet")) {
+              phDecreaseSetpoint();
+            } else {
+              Serial.print("Command not recognized. Check command & try again. Give command 'help' for more info.");
+            }
+        } else {
+          // some kind of error message
         }
     }
   }
