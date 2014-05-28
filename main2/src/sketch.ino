@@ -13,35 +13,42 @@
   #include <SD.h>                            //SD card library
   #include <Wire.h>                          //One Wire library
   #include "RTClib.h"                        //Real Time Clock library
-  #include <EEPROMex.h>                      //Extended Eeprom library                          // not in use
   #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
   #include "DHT.h"                           //DHT library for DHT22 sensor
-  #include "SPI.h"                                                                              // not in use
+  // not in use: commented out, and it seems to run fine
+    //#include "SPI.h"
+    //#include <EEPROMex.h>                      //Extended Eeprom library
 
 
   // Pin Definitions
-  #define DHTPIN             34                //pin for DHT22
-  #define redLEDpin          2                 //LEDs on SD card
-  #define greenLEDpin        3                 //LEDs on SD Card
-  #define DS18S20_Pin        28                //DS18S20 Signal pin on digital 2
-  #define pHPin              A7                //pin for pH probe
-  #define pHPlusPin          45                //pin for Base pump (relay)
-  #define pHMinPin           46                //pin for Acide pump (relay)
-  #define lightSensor        A8                //pin for Photoresistor
-  #define solenoidPin        49                //digital pin
-  #define LED_SOLENOID_PIN   38                //LED
-  #define LED_LIQ_PIN        40                //LED
-  /*
-  #define liqLevelRefResistor 2250             //liquid level[] it's 2250 ohms +/- 10%, so we should check it with a multimeter and put the correct value here
-  #define liqLevelSensorPin A10                //liquid level
-  */
+  #define DHTPIN             34                // pin for DHT22
+  #define redLEDpin          2                 // LEDs on SD card
+//#define greenLEDpin        3                 // LEDs on SD Card                  // not in use
+  #define DS18S20_Pin        28                // DS18S20 Signal pin on digital 2
+  #define pHPin              A7                // pin for pH probe
+  #define pHPlusPin          45                // pin for Base pump (relay)
+  #define pHMinPin           46                // pin for Acide pump (relay)
+  #define lightSensor        A8                // pin for Photoresistor
+  #define solenoidPin        49                // digital pin
+  #define LED_SOLENOID_PIN   38                // LED
+  #define LED_LIQ_PIN        40                // LED
+
+/*for AS: ideas on simulating float switches
+  delete if not useful / needed :-)
+
+  float switches: you can use a simple breadboard switch or button
+  or fake a switch:
+    wire breadboard as if you're setting up a switch (don't forget the pull down resistor)
+    connect a jumper cable in place of the switch (fake switch on)
+    disconnect jumper cable (fake switch off)
+
+  -CP
+*/
   #define LowestFloatPin     32
   #define MiddleFloatPin     33
   #define HighestFloatPin    34
 
   //  Setpoints
-  int tankLowSetPoint = 60;             // variable to store lower limit of tank level   // as a %
-  int tankHighSetPoint = 80;             // variable to store upper limit of tank level   // as a %
   float Setpoint=4.8;                    //holds value for Setpoint
 
 
@@ -57,12 +64,12 @@
 
 
   //  Other Variable Initialization
-  int x, y;
-  int page = 0;
+//int x, y;                    // not in use
+//int page = 0;                // not in use
   int tankProgState = 0;
   int manualRefilState = 0;
   float pH;                          //generates the value of pH
-  int pmem = 0;                      //check which page you're on    // I think we should get rid of this variable... it doesn't seem to be doing anything. -CP
+//int pmem = 0;                      //check which page you're on    // I think we should get rid of this variable... it doesn't seem to be doing anything. -CP
   float HysterisMin;
   float HysterisPlus;
   float SetHysteris = 0.1;
@@ -98,9 +105,9 @@
     pinMode (LED_LIQ_PIN, OUTPUT);
     pinMode(10, OUTPUT);                    // I think this is the SD pin -CP
     pinMode(redLEDpin, OUTPUT);
-    pinMode(greenLEDpin, OUTPUT);
+  //pinMode(greenLEDpin, OUTPUT);           // not in use
 
-    pmem==0;
+    /*pmem==0;*/
 
     delay(300);
     Serial.begin(9600);
@@ -111,7 +118,7 @@
 
   }
 
-/*                      // RMed for testing without SD card reader
+/*                      // commented out for testing without SD card reader
   void SDSetup() {
     // initialize the SD card
     Serial.print("Initializing SD card...");
@@ -157,7 +164,7 @@
     pinMode(HighestFloatPin,INPUT);
   }
   //  Liquid Level Sensor Function
-  int TankShouldFillLoop() {  // return bool // formerly TankShouldFillLoop
+  bool TankShouldFill() {
     bool result;
 
     bool lowestFloatSubmerged = false;
@@ -215,47 +222,47 @@
     pH = (0.0178 * pHSensorValue - 1.889);
     */
 
-    float pH = 5.4;  // CP KILL THIS - its BS BS BS
+    pH = 4.81;  // CP KILL THIS - its BS BS BS
 
     HysterisMin = (Setpoint - SetHysteris);
     HysterisPlus = (Setpoint + SetHysteris);
 
     // - SERIES OF IF STATEMENTS TO CHANGE CONTROL VARIABLES BASED ON SYSTEM STATE -
     if (pH == Setpoint) {
-      pmem == 0, // why is this a logical operator?
+      /*pmem == 0, // why is this a logical operator?*/
       digitalWrite (pHMinPin, LOW);
       digitalWrite (pHPlusPin, LOW);
     }
 
-    if (pH >= HysterisMin && pH <= HysterisPlus && pmem == 0) {
+    if (pH >= HysterisMin && pH <= HysterisPlus/* && pmem == 0*/) {
       digitalWrite (pHMinPin, LOW);
       digitalWrite (pHPlusPin, LOW);
     }
 
-    if (pH < HysterisMin && pmem == 0) {
-      pmem == 1,
+    if (pH < HysterisMin/* && pmem == 0*/) {
+      /*pmem == 1,*/
       digitalWrite (pHPlusPin, HIGH);
       delay(300);                          // LED
       digitalWrite (pHPlusPin, LOW);       // LED
       digitalWrite (pHMinPin, LOW);
     }
 
-    if (pH >= HysterisMin && pH < Setpoint && pmem == 1) {
+    if (pH >= HysterisMin && pH < Setpoint /*&& pmem == 1*/) {
       digitalWrite (pHPlusPin, HIGH);
       delay(300);                          // LED
       digitalWrite (pHPlusPin, LOW);       // LED
       digitalWrite (pHMinPin, LOW);
     }
 
-    if (pH > HysterisPlus && pmem == 0) {
-      pmem ==2,
+    if (pH > HysterisPlus/* && pmem == 0*/) {
+      /*pmem ==2,*/
       digitalWrite (pHMinPin, HIGH);
       delay(300);                          // LED
       digitalWrite (pHMinPin, LOW);        // LED
       digitalWrite (pHPlusPin, LOW);
     }
 
-    if (pH <= HysterisPlus && pH > Setpoint && pmem == 2) {
+    if (pH <= HysterisPlus && pH > Setpoint/* && pmem == 2*/) {
       digitalWrite (pHMinPin, HIGH);
       delay(300);                          // LED
       digitalWrite (pHMinPin, LOW);        // LED
@@ -281,17 +288,15 @@
 
   //  Determine amount of light, in lux
   void lightLoop() {
-    if (page == 0) {
-      lightADCReading = analogRead(lightSensor);
-      // Calculating the voltage of the Analog to Digital Converter ADC for light
-      lightInputVoltage = 5.0 * ((double)lightADCReading / 1024.0);
-      // Calculating the resistance of the photoresistor in the voltage divider
-      lightResistance = (10.0 * 5.0) / lightInputVoltage - 10.0;
-      // Calculating the intensity of light in lux
-      currentLightInLux = 255.84 * pow(lightResistance, -10/9);
-      Serial.print("Light level = ");
-      Serial.println(currentLightInLux);
-    }
+    lightADCReading = analogRead(lightSensor);
+    // Calculating the voltage of the Analog to Digital Converter ADC for light
+    lightInputVoltage = 5.0 * ((double)lightADCReading / 1024.0);
+    // Calculating the resistance of the photoresistor in the voltage divider
+    lightResistance = (10.0 * 5.0) / lightInputVoltage - 10.0;
+    // Calculating the intensity of light in lux
+    currentLightInLux = 255.84 * pow(lightResistance, -10/9);
+    Serial.print("Light level = ");
+    Serial.println(currentLightInLux);
   }
 
 
@@ -324,7 +329,7 @@
 
 
   void TankLevelControlLoop () {
-    if (TankShouldFillLoop()) {
+    if (TankShouldFill()) {
         //digitalWrite(solenoidPin, HIGH);  //open solenoid valve
       digitalWrite(LED_SOLENOID_PIN, HIGH);    // LED representation
       fillingNow = true;
