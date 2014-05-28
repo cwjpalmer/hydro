@@ -49,7 +49,7 @@
   #define HighestFloatPin    34
 
   //  Setpoints
-  float Setpoint=4.8;                    //holds value for Setpoint
+  float pHSetpoint=4.8;                    //holds value for pH Setpoint
 
 
   //  Custom Definitions & Variables
@@ -70,15 +70,15 @@
   int manualRefilState = 0;
   float pH;                          //generates the value of pH
 //int pmem = 0;                      //check which page you're on    // I think we should get rid of this variable... it doesn't seem to be doing anything. -CP
-  float HysterisMin;
-  float HysterisPlus;
-  float SetHysteris = 0.1;
+  float HysteresisMin;
+  float HysteresisPlus;
+  float SetHysteresis = 0.1;
   int lightADCReading;
   double currentLightInLux;
   double lightInputVoltage;
   double lightResistance;
-  int EepromSetpoint = 10;      //location of Setpoint in Eeprom
-  int EepromSetHysteris = 20;   //location of SetHysteris in Eeprom
+  int EeprompHSetpoint = 10;      //location of pHSetpoint in Eeprom
+  int EepromSetHysteresis = 20;   //location of SetHysteresis in Eeprom
   float liqTemperatureOutput;
 //  byte bGlobalErr;              //for passing error code back.      // not in use (only appeaers here) => commented out   -CP
   bool fillingNow = false;
@@ -91,8 +91,8 @@
 
   //  Non-Volatile Arduino Memory
   void EepromRead() {
-      //Setpoint = EEPROM.readFloat(EepromSetpoint);
-      //SetHysteris = EEPROM.readFloat(EepromSetHysteris);
+      //pHSetpoint = EEPROM.readFloat(EeprompHSetpoint);
+      //SetHysteresis = EEPROM.readFloat(EepromSetHysteresis);
     }
 
   //  Configuration of pins
@@ -224,17 +224,16 @@
 
     pH = 6;  // CP KILL THIS - its BS BS BS
 
-    HysterisMin = (Setpoint - SetHysteris);
-    HysterisPlus = (Setpoint + SetHysteris);
+    HysteresisMin = (pHSetpoint - SetHysteresis);
+    HysteresisPlus = (pHSetpoint + SetHysteresis);
 
     // - SERIES OF IF STATEMENTS TO CHANGE CONTROL VARIABLES BASED ON SYSTEM STATE -
-    if (pH >= HysterisMin && pH <= HysterisPlus) {
-      // pH is above lower limit and below upper limit
+    if (pH >= HysteresisMin && pH <= HysteresisPlus) {
       // add nothing
       digitalWrite(pHMinPin,LOW);
       digitalWrite(pHPlusPin,LOW);
       Serial.println("pH in acceptable range");
-    } else if (pH < HysterisMin ) {
+    } else if (pH < HysteresisMin ) {
       // make sure pH down solution not being added
       digitalWrite(pHMinPin,LOW);
       // add a dose of pH plus soution
@@ -242,7 +241,7 @@
       delay(300);
       digitalWrite(pHPlusPin,LOW);
       Serial.println("pH too low. Adjusting ...");
-    } else if (pH > HysterisPlus) {
+    } else if (pH > HysteresisPlus) {
       // make sure pH up solution not being added
       digitalWrite(pHPlusPin,LOW);
       // add a dose of pH down solution
@@ -257,20 +256,18 @@
       Serial.println("Unexpected pH reading. Check pH sensor, verify reading. If this message persists, monitor & control pH manually using handheld sensor & pH up & pH down solutions.");
     }
 
-    Serial.print("pH Setpoint = ");
-    Serial.println(Setpoint);
-    Serial.print("pH Hysteris = ");
-    Serial.println(SetHysteris);
-    Serial.print("pH = ");
+    Serial.print("pH setpoint = ");
+    Serial.println(pHSetpoint);
+    Serial.print("pH range is setpoint plus or minus: ");
+    Serial.println(SetHysteresis);
+    Serial.print("current pH = ");
     Serial.println(pH);
 
-    Serial.print("Liquid Temperature: ");
+    Serial.print("Current liquid temperature = ");
     Serial.print(getTemp());
-    Serial.println(" °C");
+    Serial.println(" C");
 
   }
-
-
 
 
   //  Determine amount of light, in lux
@@ -283,34 +280,34 @@
     // Calculating the intensity of light in lux
     currentLightInLux = 255.84 * pow(lightResistance, -10/9);
     Serial.print("Light level = ");
-    Serial.println(currentLightInLux);
+    Serial.print(currentLightInLux);
+    Serial.println(" lux");
   }
 
 
-
-  //  pH & Hysteris Controls
+  //  pH & Hysteresis Controls
   void phIncreaseSetpoint() {
-    Setpoint = Setpoint + 0.10;
-    if (Setpoint >= 9.00) {
-      Setpoint = 9.00;
+    pHSetpoint = pHSetpoint + 0.10;
+    if (pHSetpoint >= 9.00) {
+      pHSetpoint = 9.00;
     }
   }
   void phDecreaseSetpoint() {
-    Setpoint = Setpoint - 0.10;
-    if (Setpoint <= 3.00) {
-      Setpoint = 3.00;
+    pHSetpoint = pHSetpoint - 0.10;
+    if (pHSetpoint <= 3.00) {
+      pHSetpoint = 3.00;
     }
   }
-  void phIncreaseHysteris() {
-    SetHysteris = SetHysteris + 0.01;
-    if (SetHysteris >= 9.00) {
-      SetHysteris = 9.00;
+  void phIncreaseHysteresis() {
+    SetHysteresis = SetHysteresis + 0.01;
+    if (SetHysteresis >= 9.00) {
+      SetHysteresis = 9.00;
     }
   }
-  void phDecreaseHysteris() {
-    SetHysteris = SetHysteris - 0.01;
-    if (SetHysteris <= 0.01) {
-      SetHysteris = 0.01;
+  void phDecreaseHysteresis() {
+    SetHysteresis = SetHysteresis - 0.01;
+    if (SetHysteresis <= 0.01) {
+      SetHysteresis = 0.01;
     }
   }
 
@@ -429,8 +426,7 @@
       dataFile.print(liqTemperatureOutput);
       dataFile.println();
       dataFile.close();
-    }
-    else {
+    } else {
       Serial.println("error copying data to CSV");
     }
   }
@@ -466,7 +462,7 @@
 
   // *********************** Main Loops **************************
   void setup() {
-    EepromRead();             //  pull values for Setpoint, SetHysteris, from eeprom
+    EepromRead();             //  pull values for pHSetpoint, SetHysteresis, from eeprom
     dht.begin();              //
     logicSetup();             //  set some pinmodes and begin serial comms
     timeSetup();              //  start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
