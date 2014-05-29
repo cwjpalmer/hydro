@@ -86,13 +86,6 @@
   bool fillingNow = false;
   bool overFilledError = false;
 
-
-  //  Looped Functions
-
-  // ********************* Setup Functions ***********************
-
-  //  Non-Volatile Arduino Memory
-
 /*
   ***** EEPROM BLOCK *****
       *  goal: store setpoints to flash memory so that system recovers to same state upon reset
@@ -144,7 +137,6 @@
       Tasks
       [] separate SD & RTC functions into two blocks
 */
-/*                      // commented out for testing without SD card reader
   void SDSetup() {
     // initialize the SD card
     Serial.print("Initializing SD card...");
@@ -176,7 +168,6 @@
      dataFile.print("pH,temp,humidity,light,date");
   }
 
-
   //  Error Function Associated with SD Card
   void error(char *str)
   {
@@ -187,7 +178,6 @@
     digitalWrite(redLEDpin, HIGH);
     while(1);
   }
-
 
   //  Print Data to SD Card
   void SDLoop()
@@ -215,7 +205,6 @@
     }
   }
 
-
   void timeSetup()
   {
       Wire.begin();
@@ -225,7 +214,6 @@
       }
   }
 
-*/
 
 /*
   ***** LIQUID LEVEL FUNCTION BLOCK *****
@@ -274,10 +262,18 @@
     return result;
   }
 
-
-  void logicLoop() {
-
-
+/*
+  ***** CONTROL LOGIC BLOCK *****
+      *  includes reading values & process control
+      * DHT, liquid T (1wire), pH
+      Tasks
+      [] Separate out for different probes
+        [] DHT
+        [] liquid T
+        [] pH
+      [] include setup functions
+*/
+void logicLoop() {
   h = dht.readHumidity();
   t = dht.readTemperature();
 
@@ -341,9 +337,16 @@
     Serial.print(getTemp());
     Serial.println(" C");
 
-  }
+}
 
-
+/*
+  ***** LIGHT BLOCK *****
+      * only reads (no process control)
+      * set up for one sensor
+      Tasks
+      [] adapt to scale for multiple sensors
+      [] include setup
+*/
   //  Determine amount of light, in lux
   void lightLoop() {
     lightADCReading = analogRead(lightSensor);
@@ -357,42 +360,6 @@
     Serial.print(currentLightInLux);
     Serial.println(" lux");
   }
-
-
-  //  pH & Hysteresis Controls
-  void phIncreaseSetpoint(float amount) {
-    if (amount) {
-      pHSetpoint = pHSetpoint + 0.10;
-      if (pHSetpoint >= 9.00) {
-        pHSetpoint = 9.00;
-      }
-    }
-    else {
-      pHSetpoint = pHSetpoint + amount;
-      if (pHSetpoint >= 9.00) {
-        pHSetpoint = 9.00;
-      }
-    }
-  }
-  void phDecreaseSetpoint() {
-    pHSetpoint = pHSetpoint - 0.10;
-    if (pHSetpoint <= 3.00) {
-      pHSetpoint = 3.00;
-    }
-  }
-  void phIncreaseHysteresis() {
-    SetHysteresis = SetHysteresis + 0.01;
-    if (SetHysteresis >= 9.00) {
-      SetHysteresis = 9.00;
-    }
-  }
-  void phDecreaseHysteresis() {
-    SetHysteresis = SetHysteresis - 0.01;
-    if (SetHysteresis <= 0.01) {
-      SetHysteresis = 0.01;
-    }
-  }
-
 
   void TankLevelControlLoop () {
     if (TankShouldFill()) {
@@ -468,7 +435,6 @@
 
   }
 
-
   //  Manual Refill via Open Solenoid Valve
   void ManualRefilProg() {
     digitalWrite(solenoidPin, HIGH);
@@ -506,6 +472,10 @@
       // interpret the pieces of the command using strcmp (read: string compare)
         if (String(goal).equalsIgnoreCase("help")) {
           // display a walkthrough on giving commands
+
+          Serial.println();
+          Serial.println();
+          Serial.println("*****************************************************");
           Serial.println("So, you need help, eh?");
           Serial.println("Here's some info on giving commands to the arduino over serial communications (that's what you're doing now).");
           Serial.println();
@@ -530,8 +500,10 @@
               Serial.println("INC PHhysteresis 0.15     (increases the hysteresis on pH by 0.15)");
               Serial.println("dec phset     (this will decrease the ph setpoint by the default value, 0.1)");
               Serial.println();
-            Serial.println();
-            Serial.println("That's all the help I have built in. For more detailed info, check out the source code or get in touch with the coders.");
+          Serial.println();
+          Serial.println("That's all the help I have built in. For more detailed info, check out the source code or get in touch with the coders.");
+          Serial.println();
+          Serial.println("*****************************************************");
         } else if (String(goal).equalsIgnoreCase("set")) {  // if the goal is set
           if (floatValue==0) {  // check to make sure that the value supplied is a number
             Serial.println("Value given was not a number. Check command & try again. Give command 'help' for more info.");
@@ -576,13 +548,57 @@
     }
   }
 
+
+/*
+  ***** VARIABLE INCREMENT BLOCK  *****
+      * functions to increase or decrease setpoints
+      * effectively support for serial command functions
+      Tasks
+      [] adapt to be more generic
+        [] eliminate repeated, nearly identical code
+*/
+  //  pH & Hysteresis Controls
+  void phIncreaseSetpoint(float amount) {
+    if (amount) {
+      pHSetpoint = pHSetpoint + 0.10;
+      if (pHSetpoint >= 9.00) {
+        pHSetpoint = 9.00;
+      }
+    }
+    else {
+      pHSetpoint = pHSetpoint + amount;
+      if (pHSetpoint >= 9.00) {
+        pHSetpoint = 9.00;
+      }
+    }
+  }
+  void phDecreaseSetpoint() {
+    pHSetpoint = pHSetpoint - 0.10;
+    if (pHSetpoint <= 3.00) {
+      pHSetpoint = 3.00;
+    }
+  }
+  void phIncreaseHysteresis() {
+    SetHysteresis = SetHysteresis + 0.01;
+    if (SetHysteresis >= 9.00) {
+      SetHysteresis = 9.00;
+    }
+  }
+  void phDecreaseHysteresis() {
+    SetHysteresis = SetHysteresis - 0.01;
+    if (SetHysteresis <= 0.01) {
+      SetHysteresis = 0.01;
+    }
+  }
+
+
   // *********************** Main Loops **************************
   void setup() {
     EepromRead();             //  pull values for pHSetpoint, SetHysteresis, from eeprom
     dht.begin();              //
     logicSetup();             //  set some pinmodes and begin serial comms
-    //timeSetup();              //  start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-    //SDSetup();                //  setup SD card, report if card is missing
+    timeSetup();              //  start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
+    SDSetup();                //  setup SD card, report if card is missing
     TankShouldFillSetup();
   }
 
@@ -590,7 +606,7 @@
      logicLoop();             //  change control variables based on system state, serial print process variables
      lightLoop();             //  calculate and serial print light level
      TankLevelControlLoop();       //  f
-     //SDLoop();                //  f
+     SDLoop();                //  f
      followSerialCommand();   // respond to serial input
      EepromUpdate();
      Serial.println();
