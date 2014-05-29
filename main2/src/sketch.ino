@@ -15,9 +15,10 @@
   #include "RTClib.h"                        //Real Time Clock library
   #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
   #include "DHT.h"                           //DHT library for DHT22 sensor
-  // not in use: commented out, and it seems to run fine
-    //#include "SPI.h"
-    //#include <EEPROMex.h>                      //Extended Eeprom library
+  #include <EEPROMex.h>                      //Extended Eeprom library
+  #include <EEPROMVar.h>                     //EEPROM variable lib (comes with EEPROMex)
+  #include "SPI.h"
+
 
 
   // Pin Definitions
@@ -49,18 +50,19 @@
   #define HighestFloatPin    34
 
   //  Setpoints
-  float pHSetpoint=4.8;                    //holds value for pH Setpoint
+  float pHSetpoint=4.8;                      //holds value for pH Setpoint
 
 
   //  Custom Definitions & Variables
   #define DHTTYPE DHT22                      //DHT 22  (AM2302)
-  OneWire ds(DS18S20_Pin);  //Temperature chip i/o
-  DHT dht(DHTPIN, DHTTYPE);                  // create a DHT type object called dht
+  OneWire ds(DS18S20_Pin);                   //Temperature chip i/o
+  DHT dht(DHTPIN, DHTTYPE);                  // create a DHT object called dht
   float h;                                   //humidity
   float t;                                   //temperature
   char filename[] = "LOGGER00.CSV";          //filename for CSV file
-  File logfile;                               //indicate CSV file exists
+  File logfile;                              //indicate CSV file exists
   RTC_DS1307 RTC;                            //Define RTC module
+  EEPROMClassEx EEPROMex;                    //create an EPPROMClassEx object called EEPROMex
 
 
   //  Other Variable Initialization
@@ -77,8 +79,8 @@
   double currentLightInLux;
   double lightInputVoltage;
   double lightResistance;
-  int EeprompHSetpoint = 10;      //location of pHSetpoint in Eeprom
-  int EepromSetHysteresis = 20;   //location of SetHysteresis in Eeprom
+  int EepromAddresspHSetpoint = 10;      //location of pHSetpoint in Eeprom
+  int EepromAddressSetHysteresis = 20;   //location of SetHysteresis in Eeprom
   float liqTemperatureOutput;
 //  byte bGlobalErr;              //for passing error code back.      // not in use (only appeaers here) => commented out   -CP
   bool fillingNow = false;
@@ -90,10 +92,27 @@
   // ********************* Setup Functions ***********************
 
   //  Non-Volatile Arduino Memory
+
+/*
+  ***** EEPROM BLOCK *****
+      *  goal: store setpoints to flash memory so that system recovers to same state upon reset
+      *  read function to pull values (runs on startup)
+      *  update function saves key (runs once per loop)
+      todos
+      [] create SD read & update functions
+      [] only call EEPROM functions if no SD card is present
+*/
   void EepromRead() {
-      //pHSetpoint = EEPROM.readFloat(EeprompHSetpoint);
-      //SetHysteresis = EEPROM.readFloat(EepromSetHysteresis);
-    }
+      // reading from EEPROM doesn't degrade it, so we can leave this stuff active all the time
+      pHSetpoint = EEPROM.readFloat(EepromAddresspHSetpoint);
+      SetHysteresis = EEPROM.readFloat(EepromAddressSetHysteresis);
+  }
+  void EepromUpdate() {
+    // write key values to EEPROM, only changing bytes for which the current value differs from the EEPROM value
+    // this slightly degrades the EEPROM, but only when the setpoints change
+    EEPROMex.updateFloat(EepromAddresspHSetpoint, pHSetpoint);
+    EEPROMex.updateFloat(EepromAddressSetHysteresis, SetHysteresis);
+  }
 
   //  Configuration of pins
   void logicSetup() {
@@ -118,7 +137,14 @@
 
   }
 
-                      // commented out for testing without SD card reader
+/*
+  ***** DATA LOGGING (SD & RTC) BLOCK *****
+      *  SD setup, SD loop, RTC setup functions
+      *  for data logging
+      Tasks
+      [] separate SD & RTC functions into two blocks
+*/
+/*                      // commented out for testing without SD card reader
   void SDSetup() {
     // initialize the SD card
     Serial.print("Initializing SD card...");
@@ -150,6 +176,56 @@
      dataFile.print("pH,temp,humidity,light,date");
   }
 
+
+  //  Error Function Associated with SD Card
+  void error(char *str)
+  {
+    Serial.print("error: ");
+    Serial.println(str);
+
+    // red LED indicates error
+    digitalWrite(redLEDpin, HIGH);
+    while(1);
+  }
+
+
+  //  Print Data to SD Card
+  void SDLoop()
+  {
+    File dataFile = SD.open(filename, FILE_WRITE);
+
+    DateTime now;
+    now = RTC.now();
+
+    if (dataFile) {
+      now = RTC.now();
+      dataFile.print(pH);
+      dataFile.print(", ");
+      dataFile.print(t, DEC);
+      dataFile.print(", ");
+      dataFile.print(h, DEC);
+      dataFile.print(", ");
+      dataFile.print(currentLightInLux);
+      dataFile.print(", ");
+      dataFile.print(liqTemperatureOutput);
+      dataFile.println();
+      dataFile.close();
+    } else {
+      Serial.println("error copying data to CSV");
+    }
+  }
+
+
+  void timeSetup()
+  {
+      Wire.begin();
+      if (!RTC.begin()) {
+      logfile.println("RTC failed");
+      Serial.println("RTC failed");
+      }
+  }
+
+*/
 
 /*
   ***** LIQUID LEVEL FUNCTION BLOCK *****
@@ -398,56 +474,6 @@
     digitalWrite(solenoidPin, HIGH);
   }
 
-
-  //  Error Function Associated with SD Card
-  void error(char *str)
-  {
-    Serial.print("error: ");
-    Serial.println(str);
-
-    // red LED indicates error
-    digitalWrite(redLEDpin, HIGH);
-    while(1);
-  }
-
-
-  //  Print Data to SD Card
-  void SDLoop()
-  {
-    File dataFile = SD.open(filename, FILE_WRITE);
-
-    DateTime now;
-    now = RTC.now();
-
-    if (dataFile) {
-      now = RTC.now();
-      dataFile.print(pH);
-      dataFile.print(", ");
-      dataFile.print(t, DEC);
-      dataFile.print(", ");
-      dataFile.print(h, DEC);
-      dataFile.print(", ");
-      dataFile.print(currentLightInLux);
-      dataFile.print(", ");
-      dataFile.print(liqTemperatureOutput);
-      dataFile.println();
-      dataFile.close();
-    } else {
-      Serial.println("error copying data to CSV");
-    }
-  }
-
-
-  void timeSetup()
-  {
-      Wire.begin();
-      if (!RTC.begin()) {
-      logfile.println("RTC failed");
-      Serial.println("RTC failed");
-      }
-  }
-
-
 /*
   ***** SEMANTIC SERIAL COMMAND BLOCK *****
       *  only one function
@@ -545,7 +571,7 @@
               Serial.print("Command not recognized. Check command & try again. Give command 'help' for more info.");
             }
         } else {
-          // some kind of error message
+          Serial.print("Command not recognized. Check command & try again. Give command 'help' for more info.");
         }
     }
   }
@@ -555,8 +581,8 @@
     EepromRead();             //  pull values for pHSetpoint, SetHysteresis, from eeprom
     dht.begin();              //
     logicSetup();             //  set some pinmodes and begin serial comms
-    timeSetup();              //  start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
-    SDSetup();                //  setup SD card, report if card is missing
+    //timeSetup();              //  start wire and RTC ... not sure what this means specifically, but it gets the clock tickin'
+    //SDSetup();                //  setup SD card, report if card is missing
     TankShouldFillSetup();
   }
 
@@ -564,8 +590,9 @@
      logicLoop();             //  change control variables based on system state, serial print process variables
      lightLoop();             //  calculate and serial print light level
      TankLevelControlLoop();       //  f
-     SDLoop();                //  f
+     //SDLoop();                //  f
      followSerialCommand();   // respond to serial input
+     EepromUpdate();
      Serial.println();
      delay(4000);
    }
