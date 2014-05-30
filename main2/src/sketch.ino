@@ -22,17 +22,17 @@
 
 
   // Pin Definitions
-  #define DHTPIN             34                // pin for DHT22 (interior)
-  #define DHTPIN2 			 35				   // pin for DHT22 (exterior)
+  #define DHTPIN             26                // pin for DHT22 (interior)
+  #define DHTPIN2 			 24				   // pin for DHT22 (exterior)
   #define redLEDpin          2                 // LEDs on SD card
 //#define greenLEDpin        3                 // LEDs on SD Card                  // not in use
-  #define DS18S20_Pin        28                // DS18S20 Signal pin on digital 2
+  #define DS18S20_Pin        28                // DS18S20 Signal pin on digital 28
   #define pHPin              A7                // pin for pH probe
   #define pHPlusPin          38                // pin for Base pump (relay)
   #define pHMinPin           40                // pin for Acide pump (relay)
   #define lightSensor        53                // pin for Photoresistor
   #define solenoidPin        49                // digital pin
-  #define LED_SOLENOID_PIN   30                // LED
+  #define LED_SOLENOID_PIN   39                // LED
   #define LED_LIQ_PIN        31                // LED
 
 /*for AS: ideas on simulating float switches
@@ -287,10 +287,10 @@ void logicLoop() {
   if (isnan(t) || isnan(h)) {
     Serial.println("Failed to read from DHT (interior)");
   } else {
-    Serial.print("Humidity: ");
+    Serial.print("Interior Humidity: ");
     Serial.print(h);
     Serial.print(" % RH\t");
-    Serial.print("Temperature: ");
+    Serial.print("Interior Temperature: ");
     Serial.print(t);
     Serial.println(" °C");
     }
@@ -298,11 +298,11 @@ void logicLoop() {
   if (isnan(t2) || isnan(h2)) {
     Serial.println("Failed to read from DHT (exterior)");
   } else {
-    Serial.print("Humidity: ");
-    Serial.print(h);
+    Serial.print("Exterior Humidity: ");
+    Serial.print(h2);
     Serial.print(" % RH\t");
-    Serial.print("Temperature: ");
-    Serial.print(t);
+    Serial.print("Exterior Temperature: ");
+    Serial.print(t2);
     Serial.println(" °C");
     }  
 
