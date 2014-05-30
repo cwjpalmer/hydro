@@ -27,12 +27,12 @@
 //#define greenLEDpin        3                 // LEDs on SD Card                  // not in use
   #define DS18S20_Pin        28                // DS18S20 Signal pin on digital 2
   #define pHPin              A7                // pin for pH probe
-  #define pHPlusPin          45                // pin for Base pump (relay)
-  #define pHMinPin           46                // pin for Acide pump (relay)
-  #define lightSensor        A8                // pin for Photoresistor
+  #define pHPlusPin          38                // pin for Base pump (relay)
+  #define pHMinPin           40                // pin for Acide pump (relay)
+  #define lightSensor        53                // pin for Photoresistor
   #define solenoidPin        49                // digital pin
-  #define LED_SOLENOID_PIN   38                // LED
-  #define LED_LIQ_PIN        40                // LED
+  #define LED_SOLENOID_PIN   30                // LED
+  #define LED_LIQ_PIN        31                // LED
 
 /*for AS: ideas on simulating float switches
   delete if not useful / needed :-)
