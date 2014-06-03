@@ -30,7 +30,7 @@
   #define pHPin              A7                // pin for pH probe
   #define pHPlusPin          38                // pin for Base pump (relay)
   #define pHMinPin           40                // pin for Acide pump (relay)
-  #define lightSensor        53                // pin for Photoresistor
+  #define lightSensor        A8                // pin for Photoresistor
   #define solenoidPin        49                // digital pin
   #define LED_SOLENOID_PIN   39                // LED
   #define LED_LIQ_PIN        31                // LED
@@ -125,12 +125,7 @@
 
     /*pmem==0;*/
 
-    delay(300);
     Serial.begin(9600);
-    Serial.println();
-    Serial.println("System Booting!");
-    Serial.println("__________________________________\n\n");
-    delay(700);
 
   }
 
@@ -143,7 +138,6 @@
 */
   void SDSetup() {
     // initialize the SD card
-    Serial.print("Initializing SD card...");
 
     if (!SD.begin(10, 11, 12, 13)) {
         error("Card failed, or not present");
@@ -198,6 +192,10 @@
       dataFile.print(t, DEC);
       dataFile.print(", ");
       dataFile.print(h, DEC);
+      dataFile.print(", ");
+      dataFile.print(t2, DEC);
+      dataFile.print(", ");
+      dataFile.print(h2, DEC);
       dataFile.print(", ");
       dataFile.print(currentLightInLux);
       dataFile.print(", ");
@@ -612,6 +610,7 @@ void logicLoop() {
 
   // *********************** Main Loops **************************
   void setup() {
+
     //EepromRead();             //  pull values for pHSetpoint, SetHysteresis, from eeprom
     dht.begin();              //
     logicSetup();             //  set some pinmodes and begin serial comms
@@ -628,5 +627,5 @@ void logicLoop() {
      followSerialCommand();   // respond to serial input
      //EepromUpdate();
      Serial.println();
-     delay(30000);
+     delay(15000);
    }
