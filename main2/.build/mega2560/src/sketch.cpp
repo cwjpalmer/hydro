@@ -1,3 +1,34 @@
+#include <Arduino.h>
+  #include <SD.h>                            //SD card library
+  #include <Wire.h>                          //One Wire library
+  #include "RTClib.h"                        //Real Time Clock library
+  #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
+  #include "DHT.h"                           //DHT library for DHT22 sensor
+  #include <EEPROMex.h>                      //Extended Eeprom library
+  #include <EEPROMVar.h>                     //EEPROM variable lib (comes with EEPROMex)
+  #include "SPI.h"
+void EepromRead();
+void EepromUpdate();
+void logicSetup();
+void SDSetup();
+void error(char *str);
+void SDLoop();
+void timeSetup();
+void TankShouldFillSetup();
+bool TankShouldFill();
+void logicLoop();
+void lightLoop();
+void TankLevelControlLoop ();
+float getTemp();
+void ManualRefilProg();
+void followSerialCommand();
+void phIncreaseSetpoint(float amount);
+void phDecreaseSetpoint();
+void phIncreaseHysteresis();
+void phDecreaseHysteresis();
+void setup();
+void loop();
+#line 1 "src/sketch.ino"
 
   /*
   **************Billie's Hydroponic Controller V1.0.1***************
@@ -10,14 +41,14 @@
 
   // ************************ Definitions **************************
   // Libraries
-  #include <SD.h>                            //SD card library
-  #include <Wire.h>                          //One Wire library
-  #include "RTClib.h"                        //Real Time Clock library
-  #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
-  #include "DHT.h"                           //DHT library for DHT22 sensor
-  #include <EEPROMex.h>                      //Extended Eeprom library
-  #include <EEPROMVar.h>                     //EEPROM variable lib (comes with EEPROMex)
-  #include "SPI.h"
+//  #include <SD.h>                            //SD card library
+//  #include <Wire.h>                          //One Wire library
+//  #include "RTClib.h"                        //Real Time Clock library
+//  #include <OneWire.h>                       //OneWire library, for liquid temperature sensor
+//  #include "DHT.h"                           //DHT library for DHT22 sensor
+//  #include <EEPROMex.h>                      //Extended Eeprom library
+//  #include <EEPROMVar.h>                     //EEPROM variable lib (comes with EEPROMex)
+//  #include "SPI.h"
 
 
 
