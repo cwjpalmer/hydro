@@ -178,6 +178,7 @@
      File dataFile = SD.open(filename, FILE_WRITE);
 
     if (dataFile) {
+      dataFile.print("date time (yyy/mm/dd hh:mm:ss), ");
       dataFile.print("pH, ");
       dataFile.print("Interior Temperature, ");
       dataFile.print("Interior Humidity, ");
