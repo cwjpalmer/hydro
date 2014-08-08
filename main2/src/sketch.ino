@@ -63,7 +63,7 @@
   float t;                                   //temperature (interior)
   float h2;									 //humidity (exterior)
   float t2;									 //temperature (exterior)
-  char filename[] = "LOGGER00.CSV";          //filename for CSV file
+  char filename[] = "HYDRO000.CSV";          //filename for CSV file
   File logfile;                              //indicate CSV file exists
   RTC_DS1307 RTC;                            //Define RTC module
   EEPROMClassEx EEPROMex;                    //create an EPPROMClassEx object called EEPROMex
@@ -145,8 +145,22 @@
 
       // create a new file
       for (uint8_t i = 0; i < 100000; i++) {
-        filename[6] = i/10 + '0';
-        filename[7] = i%10 + '0';
+        /*filename[5] = i/100 + '0';
+        filename[6] = i/10 + '0';*/
+        if ( i < 10 ) {
+          filename[7] = i + '0';
+        } else if ( i < 100 ) {
+          filename[6] = i/10 + '0';
+          filename[7] = i%10 + '0';
+        } else if ( i < 1000) {
+          filename[5] = i/100 + '0';
+          filename[6] = i%100/10 + '0';
+          filename[7] = i%100%10 + '0';
+        } else {
+          Serial.println();
+          Serial.println("ran out of file names");
+          Serial.println();
+        }
         if (! SD.exists(filename)) {
           // only open a new file if it doesn't exist
           logfile = SD.open(filename, FILE_WRITE);
@@ -195,11 +209,23 @@
   {
     File dataFile = SD.open(filename, FILE_WRITE);
 
-    DateTime now;
-    now = RTC.now();
+    DateTime now = RTC.now();
 
     if (dataFile) {
-      now = RTC.now();
+
+      dataFile.print(now.year(), DEC);
+      dataFile.print('/');
+      dataFile.print(now.month(), DEC);
+      dataFile.print('/');
+      dataFile.print(now.day(), DEC);
+      dataFile.print(' ');
+      dataFile.print(now.hour(), DEC);
+      dataFile.print(':');
+      dataFile.print(now.minute(), DEC);
+      dataFile.print(':');
+      dataFile.print(now.second(), DEC);
+      dataFile.print(", ");
+
       dataFile.print(pH);
       dataFile.print(", ");
       dataFile.print(t, DEC);
@@ -224,8 +250,14 @@
   {
       Wire.begin();
       if (!RTC.begin()) {
-      logfile.println("RTC failed");
-      Serial.println("RTC failed");
+        logfile.println("RTC failed");
+        Serial.println("RTC failed");
+      }
+      if (! RTC.isrunning()) {
+          Serial.println("RTC is NOT running!");
+          // following line sets the RTC to the date & time this sketch was compiled
+          // uncomment it & upload to set the time, date and start run the RTC!
+          RTC.adjust(DateTime(__DATE__, __TIME__));
       }
   }
 
@@ -315,7 +347,7 @@ void logicLoop() {
     Serial.print("Exterior Temperature: ");
     Serial.print(t2);
     Serial.println(" °C");
-    }  
+    }
 
     float pHSensorValue = 0;
     pHSensorValue = analogRead(pHPin);
@@ -643,5 +675,5 @@ void logicLoop() {
      followSerialCommand();   // respond to serial input
      //EepromUpdate();
      Serial.println();
-     delay(600000);
+     delay(1000);  // shortened for testing
    }
