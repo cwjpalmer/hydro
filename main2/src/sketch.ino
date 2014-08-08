@@ -78,6 +78,9 @@
   float HysteresisMin;
   float HysteresisPlus;
   float SetHysteresis = 1.25;
+  bool pHupAdded = false;     // variable to track whether pH up was added this loop
+  bool pHdownAdded = false;   // variable to track whether pH down was added this loop
+
   int lightADCReading;
   double currentLightInLux;
   double lightInputVoltage;
@@ -185,7 +188,9 @@
       dataFile.print("Exterior Temperature, ");
       dataFile.print("Exterior Humidity, ");
       dataFile.print("Lux, ");
-      dataFile.print("Liquid Temperature");
+      dataFile.print("Liquid Temperature,");
+      dataFile.print("pH Up Added (1 = yes & 0 = no), ");
+      dataFile.print("pH Down Added (1 = yes & 0 = no) ");
       dataFile.println();
       dataFile.close();
     } else {
@@ -228,18 +233,22 @@
       dataFile.print(", ");
 
       dataFile.print(pH);
-      dataFile.print(", ");
+      dataFile.print(",");
       dataFile.print(t, DEC);
-      dataFile.print(", ");
+      dataFile.print(",");
       dataFile.print(h, DEC);
-      dataFile.print(", ");
+      dataFile.print(",");
       dataFile.print(t2, DEC);
-      dataFile.print(", ");
+      dataFile.print(",");
       dataFile.print(h2, DEC);
-      dataFile.print(", ");
+      dataFile.print(",");
       dataFile.print(currentLightInLux);
-      dataFile.print(", ");
+      dataFile.print(",");
       dataFile.print(liqTemperatureOutput);
+      dataFile.print(",");
+      dataFile.print(pHupAdded);
+      dataFile.print(",");
+      dataFile.print(pHdownAdded);
       dataFile.println();
       dataFile.close();
     } else {
@@ -363,28 +372,42 @@ void logicLoop() {
     if (pH >= HysteresisMin && pH <= HysteresisPlus) {
       // add nothing
       digitalWrite(pHMinPin,LOW);
+      pHdownAdded = false;
+
       digitalWrite(pHPlusPin,LOW);
+      pHupAdded = false;
+
       Serial.println("pH in acceptable range");
     } else if (pH < HysteresisMin ) {
       // make sure pH down solution not being added
       digitalWrite(pHMinPin,LOW);
+      pHdownAdded = false;
+
       // add a dose of pH plus soution
       digitalWrite(pHPlusPin,HIGH);
+      pHupAdded = true;
+
       delay(25);
       digitalWrite(pHPlusPin,LOW);
       Serial.println("pH too low. Adjusting ...");
     } else if (pH > HysteresisPlus) {
       // make sure pH up solution not being added
       digitalWrite(pHPlusPin,LOW);
+      pHupAdded = false;
+
       // add a dose of pH down solution
       digitalWrite(pHMinPin,HIGH);
+      pHdownAdded = true;
       delay(25);
       digitalWrite(pHMinPin,LOW);
       Serial.println("pH too high. Adjusting ...");
     } else {
+      digitalWrite(pHMinPin,HIGH);  // this doesn't make sense!!!!
+      digitalWrite(pHPlusPin,HIGH); // this doesn't make sense!!!!
+      pHdownAdded = false;
+      pHupAdded = false;
+
       // feedback saying pH is fucked
-      digitalWrite(pHMinPin,HIGH);
-      digitalWrite(pHPlusPin,HIGH);
       Serial.println("Unexpected pH reading. Check pH sensor, verify reading. If this message persists, monitor & control pH manually using handheld sensor & pH up & pH down solutions.");
     }
 
